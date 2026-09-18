@@ -100,7 +100,7 @@ plan update.
 
 ## Phase 3 — Motion Path Producer, Adapter and Demonstration
 
-- [ ] Task: Motion path producer
+- [~] Task: Motion path producer
   - [ ] Write failing tests: frame count, displacement and curve produce the
         expected integer offsets, the endpoints land exactly on the requested
         displacement, no drift accumulates, durations are returned alongside
