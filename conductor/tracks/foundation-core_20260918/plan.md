@@ -68,13 +68,13 @@ plan update.
   - [x] Implement arc evaluation
   - [x] Refactor and re-run
 
-- [~] Task: Transform, pixel snapping and the sub-pixel accumulator
-  - [ ] Write failing tests: composed transforms equal the expected mapping,
+- [x] Task: Transform, pixel snapping and the sub-pixel accumulator `9e5a792`
+  - [x] Write failing tests: composed transforms equal the expected mapping,
         every emitted position is an integer, the accumulated remainder never
         lets total displacement drift from the requested value across a long
         sequence
-  - [ ] Implement the transform module
-  - [ ] Refactor and re-run
+  - [x] Implement the transform module
+  - [x] Refactor and re-run
 
 - [ ] Task: Seeded random source
   - [ ] Write failing tests: the same seed reproduces the same sequence, two
