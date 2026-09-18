@@ -1,0 +1,37 @@
+Task: Sample character and demonstration command (Phase 3)
+
+What was done:
+- A script generates the bundled character from fixed coordinates: a small
+  figure with an outline, on a thirty-two pixel canvas. Identical on every
+  machine, which is the property that lets it serve as a reference.
+- The menu command asks the core for a dash and hands the result to the
+  adapter. It contains no mathematics and no document manipulation; if either
+  appears there, it belongs in one of the other two layers.
+- The numbers that give the dash its character live in a preset file. Changing
+  how the motion feels must not mean editing the engine.
+- The entry point now makes the extension's own modules loadable, which the
+  application does not do on its own.
+- A render script runs the same path in batch mode and writes out the animation
+  and its numbered frames.
+
+Verified:
+- The rendered frames were inspected directly: two held beats, then a large
+  step, then progressively smaller ones as the motion slows, settling at the
+  target and holding. That is the decelerating profile the preset asks for.
+- One undo removes the entire result. This is now an automated check rather
+  than a claim: the integration test applies the motion, presses undo once, and
+  asserts the frame count, the layer count and the tag count are all back to
+  where they started. Twenty-nine checks in total.
+
+Finding worth keeping - the limit of driving the interface:
+On this desktop the editor runs through the X compatibility layer and only
+receives synthetic input while it truly holds keyboard focus. With focus
+elsewhere, keystrokes vanish and pointer moves are ignored, which means a
+synthetic click lands wherever the real pointer happens to rest - worse than
+doing nothing. The interface driver is therefore for looking at the interface
+when someone is already in front of it. Unattended visual checks go through the
+batch render instead, which needs no window at all. A virtual display server
+would lift the limit but is not installed and installing it needs a password.
+
+Also caught here: a language runtime cache directory was about to be committed;
+it is now ignored.
