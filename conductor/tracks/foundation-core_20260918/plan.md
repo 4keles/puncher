@@ -18,10 +18,10 @@ plan update.
   - [x] Write the exact commands into the Development Commands section of the
         process document
 
-- [~] Task: Create the source layout and its boundary
-  - [ ] Create the core, adapter, commands, presets, assets and tests
+- [x] Task: Create the source layout and its boundary `9d6f54c`
+  - [x] Create the core, adapter, commands, presets, assets and tests
         directories with a short note in each stating what may live there
-  - [ ] Document the rule that the core directory may not reference Aseprite
+  - [x] Document the rule that the core directory may not reference Aseprite
 
 - [ ] Task: Extension manifest and menu entry stub
   - [ ] Write the manifest registering one menu entry
