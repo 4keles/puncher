@@ -54,12 +54,12 @@ plan update.
   - [x] Implement the curve set
   - [x] Refactor and re-run
 
-- [~] Task: Frame sampler
-  - [ ] Write failing tests: a requested frame count produces exactly that many
+- [x] Task: Frame sampler `997de15`
+  - [x] Write failing tests: a requested frame count produces exactly that many
         frames, the first and last positions are exact, durations may be
         non-uniform, hold frames repeat the extremes
-  - [ ] Implement the sampler
-  - [ ] Refactor and re-run
+  - [x] Implement the sampler
+  - [x] Refactor and re-run
 
 - [ ] Task: Arcs
   - [ ] Write failing tests: the quadratic curve passes through its endpoints,
