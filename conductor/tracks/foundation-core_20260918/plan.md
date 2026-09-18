@@ -47,7 +47,7 @@ plan update.
 
 ## Phase 2 — Mathematical Core
 
-- [ ] Task: Easing curves
+- [~] Task: Easing curves
   - [ ] Write failing tests: endpoint values are exact, output stays within
         bounds for non-overshoot curves, the out form is the mirror of the in
         form, the overshoot curve does exceed its target
