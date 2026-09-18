@@ -1,0 +1,33 @@
+Phase 1 verification and checkpoint (Track foundation-core_20260918)
+
+Automated checks, all run with the commands recorded in the process document:
+- Core test suite: ran clean, exit status zero. No core modules exist yet, so
+  the suite is empty by design; the runner's failure path was proved separately
+  with a temporary failing test when it was built.
+- Linter: two files, no warnings, no errors.
+- Formatter: whole tree clean.
+- Real runtime: a batch run inside the application confirmed the registered
+  command is callable and an invented command name is not, which proves both
+  the extension's startup function and its command registration.
+
+Visual verification, performed by driving the running application rather than
+asking a person:
+- The application was launched, its File menu opened with a keyboard shortcut,
+  and the window captured. The extension's own group appears in that menu.
+- Navigating into the group and activating its single entry produced the
+  expected box with the expected two lines, and no permission prompt appeared -
+  which is the specific friction this project set out to avoid.
+- One defect was found this way and fixed inside the phase: the box named the
+  wrong menu path for where the tools live. The group sits directly in the File
+  menu as a sibling of the scripts submenu, not nested inside it as assumed.
+  The corrected text was verified the same way.
+
+Environment work done alongside the phase, at the operator's request:
+- The editor was installed as a normal desktop application: binary linked onto
+  the path, icons in five sizes, a validated desktop entry, the sprite file type
+  associated, and a thumbnail generator limited to sprite files only rather than
+  taking over every common image format as the upstream script would have.
+
+Phase outcome: the skeleton, the tooling, the test harness and the proof that a
+command reaches the running application are all in place. The mathematical core
+itself is the next phase's work.
