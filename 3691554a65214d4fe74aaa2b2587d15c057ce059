@@ -1,0 +1,23 @@
+Task: Motion path producer (Phase 3, Track foundation-core_20260918)
+
+Red phase: tests first, failed on the missing module. Green phase: ten new
+tests, sixty-three in total.
+
+What the tests pin down:
+- One step per frame, held beats included, and held beats do not move.
+- Every offset is a whole pixel.
+- The path starts at zero and lands exactly on the target - checked for every
+  distance from one to sixty pixels, since the interesting failures hide in
+  distances that do not divide evenly by the frame count.
+- A negative distance travels backwards and never reverses direction midway.
+- The vertical axis can be driven instead of the horizontal one.
+- A jump leaves the ground, never exceeds the height it was given, and returns
+  to the ground while still arriving at its forward target.
+- A missing distance is rejected with a message naming what is missing.
+
+Design notes:
+- The final frame is pinned to the target rather than trusted to arithmetic.
+  The accumulator keeps the error under half a pixel, but under half a pixel is
+  still visibly short at this scale.
+- The jump is built on top of the straight move rather than duplicating it, so
+  there is one place where pacing and rounding are decided.
