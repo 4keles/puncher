@@ -7,14 +7,15 @@ plan update.
 
 ## Phase 1 — Development Environment and Skeleton
 
-- [ ] Task: Install and record the development tooling
-  - [ ] Confirm the Lua interpreter version matches the one Aseprite embeds
-  - [ ] Install the linter, the unit test library and the coverage tool into a
+- [x] Task: Install and record the development tooling `bc05b5a`
+  - [x] Confirm the Lua interpreter version matches the one Aseprite embeds
+  - [x] Install the linter, the unit test library and the coverage tool into a
         user-local package tree, with explicit operator authorization
-  - [ ] Install the formatter binary, with explicit operator authorization
-  - [ ] If a coverage tool cannot be installed, stop and amend the coverage
-        target in the process document before continuing
-  - [ ] Write the exact commands into the Development Commands section of the
+  - [x] Install the formatter binary, with explicit operator authorization
+  - [x] If a coverage tool cannot be installed, stop and amend the coverage
+        target in the process document before continuing (not needed: the
+        coverage tool installed cleanly)
+  - [x] Write the exact commands into the Development Commands section of the
         process document
 
 - [ ] Task: Create the source layout and its boundary
