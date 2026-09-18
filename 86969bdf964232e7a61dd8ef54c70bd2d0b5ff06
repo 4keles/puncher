@@ -1,0 +1,23 @@
+Phase 2 verification and checkpoint (Track foundation-core_20260918)
+
+Automated checks, run with the commands recorded in the process document:
+- Fifty-three tests pass, zero failures.
+- The core layer is clean: it never reaches into the application, proved by the
+  checker built in this phase and separately by deliberately breaking it.
+- Linter and formatter clean across fifteen files.
+- Coverage over the core layer is complete, against a target of eighty percent.
+
+Demonstration that the mathematics produces sensible motion, not just passing
+assertions: a thirty-two pixel forward dash over eight moving frames with a
+decelerating curve, one held beat before and two after. The positions come out
+as a held start, a twelve pixel burst, then eight, six, four and one pixel
+steps as it slows, landing exactly on thirty-two and holding there. The held
+beats last twice as long as the moving ones. Total displacement matches the
+request exactly, which is the accumulator doing its job.
+
+What exists now: curves, frame sampling with uneven timing, bent paths and
+throws, transforms with pixel snapping and drift-free accumulation, and
+repeatable randomness. All of it runs without the application, all of it is
+covered, and the boundary that makes that possible is machine-enforced.
+
+Next phase turns this into frames inside a real sprite.
