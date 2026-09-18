@@ -126,9 +126,11 @@ plan update.
   - [x] Run it on the sample character and watch the resulting animation
   - [x] Confirm the original layer is untouched and one undo clears everything
 
-- [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
-  - [ ] Visual verification: the animation is watched in full, not judged from
+- [x] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`) `89757b9`
+  - [x] Visual verification: the animation is watched in full, not judged from
         a single frame
+
+## Phase 3 complete [checkpoint: 89757b9]
 
 ## Phase 4 — Continuous Integration and Closure
 
