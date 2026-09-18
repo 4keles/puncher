@@ -1,0 +1,24 @@
+Task: Install and record the development tooling (Phase 1, Track foundation-core_20260918)
+
+What was done:
+- Confirmed the system Lua interpreter is 5.4.8, the same 5.4 line Aseprite
+  embeds, so core modules tested outside the application run on the same
+  language semantics they will run on inside it.
+- Installed luacheck 1.2.0, luaunit 3.5 and luacov 0.17.0 through LuaRocks into
+  the user-local tree at ~/.luarocks (pulling luafilesystem 1.9.0 as a
+  dependency, compiled locally against the system Lua headers).
+- Installed stylua 2.5.2 as a prebuilt binary into ~/.local/bin rather than
+  compiling it, which would have taken minutes for no benefit.
+- Verified all four are reachable and that both Lua libraries load.
+
+Files changed:
+- conductor/workflow.md (Development Commands section filled in)
+
+Why:
+The coverage target and the lint requirement in the process document were
+unenforceable without measuring tools. The risk recorded in the track
+specification - that coverage tooling might not be installable in this
+environment - did not materialise, so the stated target stands unchanged and no
+amendment to the process document was needed.
+
+Nothing from this task ships with the extension; it remains dependency-free.
