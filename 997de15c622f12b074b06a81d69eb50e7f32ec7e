@@ -1,0 +1,25 @@
+Task: Frame sampler (Phase 2, Track foundation-core_20260918)
+
+Red phase: tests written first, failed on the missing module. Green phase: ten
+new tests pass, eighteen in total.
+
+What the tests pin down:
+- The requested number of moving frames is produced, and held beats add to that
+  total rather than replacing moving frames.
+- The first and last positions are exact, which matters because a motion that
+  lands slightly short looks broken.
+- Held beats repeat the extreme positions instead of inventing new ones.
+- Progress never moves backwards.
+- A held beat can last longer than a moving one, and every frame carries a
+  positive duration.
+- A curve can be passed by name or as a function, so presets can carry a name
+  as plain data.
+- Fewer than two frames and a negative hold count are both rejected with a
+  message that says what is wrong.
+
+Design notes:
+- Defaults are named constants rather than inline numbers, since frame duration
+  and hold length are exactly the kind of tunable the style guide says belongs
+  in data.
+- Each frame records whether it is held, which the later layers need in order
+  to know where a pose is deliberately frozen.
