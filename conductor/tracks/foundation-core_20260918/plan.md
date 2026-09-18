@@ -31,10 +31,10 @@ plan update.
         interface work)
   - [x] Record the installation steps in the process document
 
-- [~] Task: Linter and formatter configuration
-  - [ ] Declare the Aseprite globals so the linter does not report them
-  - [ ] Configure the formatter to the style stated in the Lua style guide
-  - [ ] Both run clean on the whole tree
+- [x] Task: Linter and formatter configuration `177f7cb`
+  - [x] Declare the Aseprite globals so the linter does not report them
+  - [x] Configure the formatter to the style stated in the Lua style guide
+  - [x] Both run clean on the whole tree
 
 - [ ] Task: Test runner entry point
   - [ ] One documented command discovers and runs the core test suite
