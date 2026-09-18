@@ -1,0 +1,22 @@
+Task: Create the source layout and its boundary (Phase 1, Track foundation-core_20260918)
+
+What was done:
+- Created six directories with a short note in each: pure mathematics, the
+  translation layer to the application, menu commands, parameter data, small
+  fixtures, and the two test suites.
+- Stated the boundary rule in the note for the mathematics directory, pointing
+  at the style guide that owns the rule rather than restating it.
+- Separated the two test suites explicitly, with the note recording why the
+  fast suite alone does not count as verification.
+- Added a version-control ignore list for coverage output, packaged builds and
+  exported media.
+
+Files changed:
+- core/README.md, adapter/README.md, commands/README.md, presets/README.md,
+  assets/README.md, tests/README.md, .gitignore, and placeholders keeping the
+  two empty test directories tracked.
+
+Why:
+The layer separation is a precondition for the coverage target and the
+automated boundary check that follows; putting the reasoning next to each
+directory means a newcomer meets the rule where they would break it.
