@@ -18,7 +18,7 @@ plan update.
   - [x] Write the exact commands into the Development Commands section of the
         process document
 
-- [ ] Task: Create the source layout and its boundary
+- [~] Task: Create the source layout and its boundary
   - [ ] Create the core, adapter, commands, presets, assets and tests
         directories with a short note in each stating what may live there
   - [ ] Document the rule that the core directory may not reference Aseprite
