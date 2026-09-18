@@ -61,7 +61,7 @@ plan update.
   - [x] Implement the sampler
   - [x] Refactor and re-run
 
-- [ ] Task: Arcs
+- [~] Task: Arcs
   - [ ] Write failing tests: the quadratic curve passes through its endpoints,
         the control point raises the midpoint as expected, the parabolic helper
         peaks at the halfway point and returns to zero
