@@ -1,0 +1,23 @@
+Task: Layer boundary check and core coverage (Phase 2)
+
+Red phase: tests first, failed on the missing module. Green phase: eight new
+tests pass, fifty-three in total.
+
+The checker was also proved end to end rather than only through its unit tests:
+run against the real core it reports clean and exits zero; with a deliberate
+violation appended to one module it names the file and line and exits non-zero;
+with the violation removed it is clean again.
+
+Why it needed care:
+A naive search would report the word 'application' in every module's own
+comments, and prose in a message string, and a parameter that happens to share
+a name. Each of those is a separate test, because any one of them would produce
+noise that makes the gate useless.
+
+Coverage:
+Measured over the core layer only, which is where the target applies - the
+application-facing layers cannot be exercised outside the application and
+counting them would turn a meaningful number into a meaningless one. Every core
+module is fully covered, against a target of eighty percent.
+
+The test runner now also discovers tests for the tooling, not just the core.
