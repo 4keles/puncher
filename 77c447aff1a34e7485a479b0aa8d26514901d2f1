@@ -1,0 +1,29 @@
+Task: Test runner entry point (Phase 1, Track foundation-core_20260918)
+
+What was done:
+- Wrote a runner that discovers every test file under the core test directory,
+  loads it, registers what it returns, and runs the collected tests.
+- It reports how many files it found and how many tests passed or failed, and
+  exits with a status that is zero only when everything passed.
+- Verified all three behaviors with a temporary test file rather than assuming
+  them: a deliberately failing test produced a failure count, a pointer to the
+  offending file and a non-zero exit; the same test made to pass produced a
+  success count and a zero exit; with no test files present the runner reports
+  zero and exits clean. The temporary file was removed afterwards.
+
+Findings worth keeping:
+- Compiled modules from the package manager land in a directory whose name
+  differs between distributions on 64-bit systems. The runner offers both
+  rather than guessing, which is why it works here without the caller
+  preparing anything.
+- The directory-listing library arrives as a dependency of the linter, but it
+  is now installed explicitly in the setup notes, because depending on another
+  tool's dependency is a trap for the next machine.
+
+Files changed:
+- tests/run_all.lua, conductor/workflow.md
+
+Why:
+Test-driven work needs a red phase that can be seen. Until a runner reports
+failure distinctly from success, 'write a failing test first' is an
+instruction nobody can follow.
