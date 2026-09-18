@@ -35,6 +35,27 @@ Sürüm eşiğinin gerekçesi: `canvas` widget (API v26 / v1.3-rc7), native `jso
 (API v25 / v1.3-rc5) ve `Image.bytes` (API v15 / v1.2.30) — üçü birden ancak
 v1.3-rc7'den itibaren garanti.
 
+### Geliştirme Ortamı (2026-09-18 itibarıyla doğrulandı)
+
+| Kalem | Değer |
+| --- | --- |
+| Binary | `~/gitClones/aseprite/build/bin/aseprite` (kaynaktan derlendi, tag `v1.3.18.5`) |
+| Sürüm | `1.3.18.5-dev`, **API v41** |
+| Skia | `aseprite-m124` prebuilt (`~/deps/skia`) |
+| Çalıştırıcı | `~/apps/asepriteRun.sh` (arka plan + log) |
+
+Headless çalışma (`--batch --script`) doğrulandı: ekran olmadan çalışıyor →
+entegrasyon test stratejisi uygulanabilir. Şu API yetenekleri canlı olarak
+denendi ve çalışıyor: `Image:resize{method='rotsprite'}`, global `json`,
+`Image.bytes`.
+
+v1.3.15.3 → v1.3.18.5 arasında scripting API v36'dan v41'e çıktı. Bizi
+ilgilendiren davranış değişiklikleri: transaction dışındaki `properties`
+değişiklikleri artık undo adımı üretmiyor (#4568) — komutlar arası metadata
+sözleşmemiz undo geçmişini kirletmeyecek; transaction içindeki layer flag
+değişiklikleri ise undo'ya doğru şekilde giriyor (#2991). Ayrıca görüntüsüz cel
+desteği (#1303) freeze/hitstop karelerinin temsili için kullanılabilir.
+
 ## Kullanılacak API Yüzeyleri
 
 | İhtiyaç | API | Not |
