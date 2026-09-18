@@ -1,0 +1,15 @@
+{
+  "id": "foundation-core_20260918",
+  "title": "Foundation and Mathematical Core",
+  "type": "bootstrap",
+  "status": "new",
+  "created": "2026-09-18",
+  "base_sha": "50db47a5573cfac163442f2bbc4e7a445631ae5e",
+  "branch": "track/foundation-core_20260918",
+  "closing_condition_source": "operator",
+  "phases": 4,
+  "gates": {
+    "premise_review": "passed",
+    "premise_review_note": "Flowchart drawn and three gaps reported before initialization: coverage measurement had no tool, continuous integration had no remote, and the Aseprite binary path was machine-specific. All three were resolved by operator decision."
+  }
+}

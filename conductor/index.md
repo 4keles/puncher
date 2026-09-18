@@ -11,6 +11,11 @@
 -   [Workflow](./workflow.md)
 -   [Code Style Guides](./code_styleguides/)
 
+## Tracks
+
+-   [Tracks Registry](./tracks.md)
+-   [Tracks Directory](./tracks/)
+
 ## Research
 
 -   [Aseprite Lua API: Capabilities and Limits](./research/01-aseprite-lua-api.md)
