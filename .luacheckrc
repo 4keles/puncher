@@ -51,3 +51,10 @@ read_globals = {
 exclude_files = {
   ".luarocks/**",
 }
+
+files["tests/**"] = {
+  -- Test methods are declared with colon syntax so they read like the test
+  -- library's own examples, which means an unused implicit first argument in
+  -- every one of them. That is the convention, not an oversight.
+  ignore = { "212/self" },
+}
