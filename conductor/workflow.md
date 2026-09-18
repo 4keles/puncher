@@ -188,9 +188,10 @@ Requires Lua 5.4 (the version Aseprite embeds), LuaRocks, and the Lua
 development headers.
 
 ```bash
-luarocks --local install luacheck   # linter
-luarocks --local install luaunit    # unit test library
-luarocks --local install luacov     # coverage measurement
+luarocks --local install luacheck        # linter
+luarocks --local install luaunit         # unit test library
+luarocks --local install luacov          # coverage measurement
+luarocks --local install luafilesystem   # directory listing, used by the test runner
 ```
 
 LuaRocks installs these under `~/.luarocks`; make sure `~/.luarocks/bin` is on
