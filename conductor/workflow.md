@@ -209,8 +209,16 @@ Aseprite itself is built from source following the upstream instructions. Its
 location is never hardcoded: export `ASEPRITE_BIN` to point at the binary.
 
 ```bash
-export ASEPRITE_BIN=/path/to/aseprite
+export ASEPRITE_BIN=aseprite   # or an absolute path, if it is not on PATH
 ```
+
+A desktop installation makes this simpler and is worth doing once: link the
+built binary into `~/.local/bin`, copy the icon set from the source tree into
+the icon theme directory, and install the desktop entry and MIME definition
+shipped under `src/desktop/linux` in the Aseprite sources. The application then
+launches from the desktop menu, sprite files open on double click, and the
+binary is on `PATH` for the test commands above. Linking rather than copying
+the binary means a rebuild updates the installed application too.
 
 ### Installing the Extension for Development
 
