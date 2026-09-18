@@ -42,10 +42,9 @@ v1.2.30) — all three together are only guaranteed from v1.3-rc7 onward.
 
 | Item | Value |
 | --- | --- |
-| Binary | `~/gitClones/aseprite/build/bin/aseprite` (built from source, tag `v1.3.18.5`) |
+| Binary | Built from source at tag `v1.3.18.5`. Its location is machine-specific and is read from the `ASEPRITE_BIN` environment variable, never hardcoded in tests or scripts. |
 | Version | `1.3.18.5-dev`, **API v41** |
-| Skia | `aseprite-m124` prebuilt (`~/deps/skia`) |
-| Runner | `~/apps/asepriteRun.sh` (background + log) |
+| Skia | `aseprite-m124` prebuilt package, as the upstream build instructions require |
 
 Headless operation (`--batch --script`) has been verified: it runs without a
 display → an integration test strategy is viable. The following API
