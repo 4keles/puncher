@@ -1,0 +1,21 @@
+Task: Easing curves (Phase 2, Track foundation-core_20260918)
+
+Red phase: the test file was written first and failed because the module did
+not exist. Green phase: eight tests pass.
+
+What the tests pin down:
+- Endpoints are exact for every curve, including the exponential ones whose
+  formulas do not naturally land on zero.
+- The decelerating form equals one minus the accelerating form of the mirrored
+  time, checked across the range rather than at a couple of points.
+- The plain curves never move backwards.
+- The overshoot curve exceeds its target somewhere before settling.
+- Time outside the unit range is clamped.
+- Looking up an unknown curve by name fails loudly instead of returning
+  nothing, which would surface much later as a confusing error.
+
+Design notes:
+- Curves live in a table addressed by name so presets can carry a curve name as
+  data rather than a function reference.
+- The overshoot constant is named rather than inlined; it is the knob that
+  decides how far past the target the motion travels.
