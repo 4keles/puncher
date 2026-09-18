@@ -76,11 +76,11 @@ plan update.
   - [x] Implement the transform module
   - [x] Refactor and re-run
 
-- [~] Task: Seeded random source
-  - [ ] Write failing tests: the same seed reproduces the same sequence, two
+- [x] Task: Seeded random source `f13a388`
+  - [x] Write failing tests: the same seed reproduces the same sequence, two
         different seeds diverge, values stay inside the requested range
-  - [ ] Implement the random source
-  - [ ] Refactor and re-run
+  - [x] Implement the random source
+  - [x] Refactor and re-run
 
 - [ ] Task: Layer boundary check
   - [ ] Write a failing test that introduces a deliberate violation and expects
