@@ -36,9 +36,9 @@ plan update.
   - [x] Configure the formatter to the style stated in the Lua style guide
   - [x] Both run clean on the whole tree
 
-- [~] Task: Test runner entry point
-  - [ ] One documented command discovers and runs the core test suite
-  - [ ] The command reports pass and fail counts and returns a non-zero exit
+- [x] Task: Test runner entry point `77c447a`
+  - [x] One documented command discovers and runs the core test suite
+  - [x] The command reports pass and fail counts and returns a non-zero exit
         code on failure
 
 - [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
