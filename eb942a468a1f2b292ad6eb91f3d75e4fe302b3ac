@@ -1,0 +1,34 @@
+Task: Extension manifest and menu entry stub (Phase 1, Track foundation-core_20260918)
+
+What was done:
+- Wrote the manifest declaring the extension and pointing at a single entry
+  point script.
+- The entry point creates one menu group under the application's script menu
+  and registers one command inside it.
+- Installed it into the application's user extension directory and verified the
+  load in the application's own log.
+- Verified registration positively rather than by absence of errors: a batch
+  run called the registered command successfully and a deliberately invented
+  command name failed, which also proves the extension's startup function runs
+  in batch mode, not only when the interface is up.
+
+Findings worth keeping:
+- A symbolic link into the extension directory is silently ignored: the scan
+  enumerates real directories only. Development therefore needs a copy step,
+  now documented in the process document.
+- The application's log is truncated on every run and only written in verbose
+  mode, so checking it requires the verbose flag on that same run.
+- The application's version value is an object, not a string, and must be
+  converted before being concatenated.
+- Showing a version number inside the About box was dropped: reading the
+  manifest back at runtime needs file access, which triggers the permission
+  prompt this project deliberately avoids, and hardcoding it would duplicate a
+  value the manifest already owns.
+
+Files changed:
+- package.json, main.lua, conductor/workflow.md
+
+Why:
+Everything later in this track needs a proven path from an installed extension
+to a running command; without it, a failing command could not be distinguished
+from a failing installation.
