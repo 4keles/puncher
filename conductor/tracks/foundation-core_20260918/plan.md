@@ -107,12 +107,13 @@ plan update.
   - [x] Implement the producer on top of the core modules
   - [x] Refactor and re-run
 
-- [~] Task: Aseprite adapter
-  - [ ] Write a failing integration test, executed by the real binary, that
+- [x] Task: Aseprite adapter `4e64970`
+  - [x] Write a failing integration test, executed by the real binary, that
         expects the produced frames, cels and tag to exist and the source layer
         to be unchanged
-  - [ ] Implement the adapter, wrapping all writes in a single transaction
-  - [ ] Confirm a single undo removes the entire result
+  - [x] Implement the adapter, wrapping all writes in a single transaction
+  - [~] Confirm a single undo removes the entire result (checked visually with
+        the demonstration command in the next task)
 
 - [ ] Task: Sample character generator
   - [ ] Write a script that generates the bundled sample character
