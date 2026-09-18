@@ -178,26 +178,58 @@ Verify before a task is considered complete:
 
 ## Development Commands
 
-> **NOTE:** This section will be filled in once `tech-stack.md` is
-> finalized (depends on the Phase 0 research output).
+The extension itself has no runtime dependencies. Everything below is
+development tooling, installed per developer, never bundled with the
+extension.
 
 ### Setup
 
+Requires Lua 5.4 (the version Aseprite embeds), LuaRocks, and the Lua
+development headers.
+
 ```bash
-# TBD — to be filled in once tech-stack.md is finalized
+luarocks --local install luacheck   # linter
+luarocks --local install luaunit    # unit test library
+luarocks --local install luacov     # coverage measurement
+```
+
+LuaRocks installs these under `~/.luarocks`; make sure `~/.luarocks/bin` is on
+`PATH`.
+
+The formatter is a standalone binary, downloaded from its own releases rather
+than built from source:
+
+```bash
+gh release download --repo JohnnyMorganz/StyLua --pattern "stylua-linux-x86_64.zip"
+unzip stylua-linux-x86_64.zip && install -m 755 stylua ~/.local/bin/stylua
+```
+
+Aseprite itself is built from source following the upstream instructions. Its
+location is never hardcoded: export `ASEPRITE_BIN` to point at the binary.
+
+```bash
+export ASEPRITE_BIN=/path/to/aseprite
 ```
 
 ### Daily Development
 
 ```bash
-# TBD — e.g. aseprite --batch --script tests/run_all.lua
+lua tests/run_all.lua                        # core unit tests, no Aseprite needed
+"$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua   # runtime tests
 ```
 
 ### Before Commit
 
 ```bash
-# TBD — lint + test + format
+luacheck .            # lint
+stylua --check .      # format check
+lua tests/run_all.lua # core tests
 ```
+
+### Verified Versions
+
+Recorded when the tooling was installed on 2026-09-18: Lua 5.4.8,
+luacheck 1.2.0, luaunit 3.5, luacov 0.17.0, stylua 2.5.2.
 
 ## Test Requirements
 
