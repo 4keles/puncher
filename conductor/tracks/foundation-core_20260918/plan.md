@@ -76,7 +76,7 @@ plan update.
   - [x] Implement the transform module
   - [x] Refactor and re-run
 
-- [ ] Task: Seeded random source
+- [~] Task: Seeded random source
   - [ ] Write failing tests: the same seed reproduces the same sequence, two
         different seeds diverge, values stay inside the requested range
   - [ ] Implement the random source
