@@ -7,7 +7,7 @@
 -- Exit status is what continuous integration reads: zero when everything
 -- passed, non-zero otherwise.
 
-local TEST_DIR = "tests/core"
+local TEST_DIRS = { "tests/core", "tests/tools" }
 local TEST_SUFFIX = "_test.lua"
 
 -- The package manager installs into a user-local tree that is not on the
@@ -70,26 +70,30 @@ local function collectTestFiles(directory)
   return files
 end
 
-local testDirectory = root .. TEST_DIR
-if lfs.attributes(testDirectory, "mode") ~= "directory" then
-  io.stderr:write("No test directory at " .. testDirectory .. "\n")
-  os.exit(1)
-end
+local discovered = 0
 
-local files = collectTestFiles(testDirectory)
-for _, file in ipairs(files) do
-  local moduleName = TEST_DIR:gsub("[/\\]", ".") .. "." .. file:sub(1, -#".lua" - 1)
-  local module = require(moduleName)
+for _, directory in ipairs(TEST_DIRS) do
+  local path = root .. directory
+  if lfs.attributes(path, "mode") ~= "directory" then
+    io.stderr:write("No test directory at " .. path .. "\n")
+    os.exit(1)
+  end
 
-  -- A test file returns its test tables; anything it returns is registered
-  -- under its own name so failures point at the file they came from.
-  if type(module) == "table" then
-    for name, value in pairs(module) do
-      _G[name] = value
+  for _, file in ipairs(collectTestFiles(path)) do
+    local moduleName = directory:gsub("[/\\]", ".") .. "." .. file:sub(1, -#".lua" - 1)
+    local module = require(moduleName)
+    discovered = discovered + 1
+
+    -- A test file returns its test tables; anything it returns is registered
+    -- under its own name so failures point at the file they came from.
+    if type(module) == "table" then
+      for name, value in pairs(module) do
+        _G[name] = value
+      end
     end
   end
 end
 
-print(("Discovered %d test file(s) in %s"):format(#files, testDirectory))
+print(("Discovered %d test file(s)"):format(discovered))
 
 os.exit(luaunit.LuaUnit.run("--verbose"))

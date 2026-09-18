@@ -267,9 +267,17 @@ copying a change in.
 ### Before Commit
 
 ```bash
-luacheck .            # lint
-stylua --check .      # format check
-lua tests/run_all.lua # core tests
+luacheck .                       # lint
+stylua --check .                 # format check
+lua tests/run_all.lua            # core tests
+lua tools/check_boundary.lua     # the core must not reach into the application
+```
+
+Coverage, when a task's quality gate calls for it:
+
+```bash
+eval "$(luarocks path)"
+lua -lluacov tests/run_all.lua && luacov && head -20 luacov.report.out
 ```
 
 ### Verified Versions

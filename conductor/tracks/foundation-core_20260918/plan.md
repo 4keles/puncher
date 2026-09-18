@@ -82,14 +82,14 @@ plan update.
   - [x] Implement the random source
   - [x] Refactor and re-run
 
-- [ ] Task: Layer boundary check
+- [~] Task: Layer boundary check
   - [ ] Write a failing test that introduces a deliberate violation and expects
         the check to report it
   - [ ] Implement the check as a command that can also run in continuous
         integration
   - [ ] Remove the deliberate violation and confirm the check passes
 
-- [ ] Task: Core coverage report
+- [~] Task: Core coverage report
   - [ ] Produce a coverage report for the core modules
   - [ ] Confirm it meets the target, or add the missing tests until it does
 

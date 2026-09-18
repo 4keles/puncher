@@ -1,0 +1,16 @@
+-- Coverage configuration.
+--
+-- Only the mathematical core carries a coverage target. The application-facing
+-- layers cannot be exercised outside the application, and counting them would
+-- turn a meaningful number into a meaningless one.
+
+include = { "^core/" }
+
+exclude = {
+  "^tests/",
+  "^tools/",
+  "luaunit",
+  "lfs",
+}
+
+reporter = "default"
