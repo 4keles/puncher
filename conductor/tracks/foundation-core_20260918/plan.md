@@ -112,19 +112,19 @@ plan update.
         expects the produced frames, cels and tag to exist and the source layer
         to be unchanged
   - [x] Implement the adapter, wrapping all writes in a single transaction
-  - [~] Confirm a single undo removes the entire result (checked visually with
-        the demonstration command in the next task)
+  - [x] Confirm a single undo removes the entire result (now an automated
+        check inside the integration suite)
 
-- [~] Task: Sample character generator
-  - [ ] Write a script that generates the bundled sample character
+- [x] Task: Sample character generator `c167906`
+  - [x] Write a script that generates the bundled sample character
         deterministically
-  - [ ] Confirm the generated file is small, has a known palette and is
+  - [x] Confirm the generated file is small, has a known palette and is
         committed as a fixture
 
-- [~] Task: Demonstration command
-  - [ ] Wire the producer and adapter behind the menu entry
-  - [ ] Run it on the sample character and watch the resulting animation
-  - [ ] Confirm the original layer is untouched and one undo clears everything
+- [x] Task: Demonstration command `c167906`
+  - [x] Wire the producer and adapter behind the menu entry
+  - [x] Run it on the sample character and watch the resulting animation
+  - [x] Confirm the original layer is untouched and one undo clears everything
 
 - [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
   - [ ] Visual verification: the animation is watched in full, not judged from
