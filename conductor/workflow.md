@@ -211,6 +211,26 @@ location is never hardcoded: export `ASEPRITE_BIN` to point at the binary.
 export ASEPRITE_BIN=/path/to/aseprite
 ```
 
+### Installing the Extension for Development
+
+The application reads user extensions from `extensions/` inside its
+configuration directory, one real directory per extension:
+
+```bash
+mkdir -p "$HOME/.config/aseprite/extensions/puncher"
+cp -r package.json main.lua core adapter commands presets \
+  "$HOME/.config/aseprite/extensions/puncher/"
+```
+
+**A symbolic link does not work.** The application enumerates only real
+directories when it scans for extensions, so a link pointing at a working copy
+is silently skipped - no error, the extension simply never appears. Copy after
+every change you want to see in the running application.
+
+To confirm an extension actually loaded, run the application once with
+`--verbose` and look for its name in `Aseprite.log` inside the configuration
+directory; the log is truncated on every run and only written in verbose mode.
+
 ### Daily Development
 
 ```bash

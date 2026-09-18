@@ -23,7 +23,7 @@ plan update.
         directories with a short note in each stating what may live there
   - [x] Document the rule that the core directory may not reference Aseprite
 
-- [ ] Task: Extension manifest and menu entry stub
+- [~] Task: Extension manifest and menu entry stub
   - [ ] Write the manifest registering one menu entry
   - [ ] Install the extension into Aseprite and confirm the entry appears
   - [ ] Record the installation steps in the process document
