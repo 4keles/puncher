@@ -1,0 +1,20 @@
+Task: Arcs (Phase 2, Track foundation-core_20260918)
+
+Red phase: tests first, failed on the missing module. Green phase: eight new
+tests pass, twenty-six in total.
+
+What the tests pin down:
+- The bent path passes exactly through its start and end.
+- The bending point pulls the path towards itself without being touched: the
+  middle lands a quarter of the way between the straight chord and that point,
+  which is the property people get wrong when they assume the curve reaches it.
+- A bending point placed on the straight line produces a straight line, so the
+  general case degrades correctly.
+- The throw is zero at both ends, peaks at exactly its height halfway, is
+  symmetric, and never exceeds its height.
+- Time outside the range is clamped rather than extrapolated.
+
+Design note:
+The throw returns a height, not a coordinate. Whether up means a larger or
+smaller number depends on where the value is consumed, and deciding that here
+would be this layer knowing something about the application that it must not.
