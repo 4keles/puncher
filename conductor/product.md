@@ -1,80 +1,82 @@
-# Puncher — Aseprite Prosedürel Aksiyon Animasyon Eklentisi
+# Puncher — Aseprite Procedural Action Animation Extension
 
-## Vizyon
+## Vision
 
-Pixel art sanatçılarının hızlı tempolu aksiyon animasyonlarını (dash, impact,
-teleport, jump) elle kare kare çizmek yerine, **matematiksel olarak parametrize
-edilmiş hazır hareket şablonlarıyla** saniyeler içinde üretebildiği bir Aseprite
-eklentisi.
+An Aseprite extension that lets pixel art artists produce fast-paced action
+animations (dash, impact, teleport, jump) in seconds using **mathematically
+parameterized ready-made motion templates**, instead of drawing them frame by
+frame by hand.
 
 ## Problem
 
-Aksiyon animasyonunda en çok zaman alan kısımlar aslında büyük ölçüde
-matematikseldir: in-between üretimi, easing/timing eğrileri, smear kareleri,
-squash & stretch, anticipation/overshoot, afterimage ve impact VFX. Sanatçı bu
-tekrar eden mekanik işe zaman harcarken karakterin karakteristiğine
-odaklanamıyor. "Vuruşun hissi" (game feel) çoğu zaman teknik bilgi eksikliğinden
-zayıf kalıyor.
+The most time-consuming parts of action animation are, in fact, largely
+mathematical: in-between generation, easing/timing curves, smear frames,
+squash & stretch, anticipation/overshoot, afterimage, and impact VFX. While
+the artist spends time on this repetitive mechanical work, they can't focus
+on the character's personality. The "feel of the hit" (game feel) often
+stays weak due to a lack of technical knowledge.
 
-## Ürün Özeti
+## Product Summary
 
-Ortak bir matematiksel motion çekirdeği üzerine kurulu, Aseprite içinde çalışan
-iki araç:
+Two tools running inside Aseprite, built on a shared mathematical motion
+core:
 
-1. **2D Aracı** — Klasik yandan/önden görünüm karakterler için.
-2. **2.5D Aracı** — Sahte derinlik (perspektif offset, ölçek, 8 yön, faux-3D
-   dönüş) destekli karakterler için.
+1. **2D Tool** — For classic side-view/front-view characters.
+2. **2.5D Tool** — For characters with fake depth support (perspective
+   offset, scale, 8 directions, faux-3D rotation).
 
-Akış: **Karakter sheet'i yükle → (belirlenmiş sheet/anchor yapısına göre
-normalize et) → algoritmik pixel art dönüşümü → motion uygula → animasyon
-preset'i seç → impact VFX katmanı ekle → düzenlenebilir Aseprite katmanları
-olarak çıktı al.**
+Flow: **Load character sheet → (normalize according to the defined
+sheet/anchor structure) → algorithmic pixel art transformation → apply
+motion → select animation preset → add impact VFX layer → output as
+editable Aseprite layers.**
 
-## Hedef Kullanıcı
+## Target User
 
-Genel pixel art topluluğu: indie oyun geliştiricileri, pixel artistler, game jam
-katılımcıları. Özellikle platformer, beat'em up, hack & slash gibi hızlı tempolu
-türlerde çalışanlar.
+The general pixel art community: indie game developers, pixel artists, game
+jam participants. Especially those working in fast-paced genres like
+platformer, beat'em up, hack & slash.
 
-## Temel Yetenekler
+## Core Capabilities
 
-1. **Sheet Ingest & Normalizasyon** — Tanımlı sprite sheet yapısı: grid,
-   pivot/anchor noktaları, iskelet işaretçileri, yön etiketleri.
-2. **Pixel Art Dönüştürücü** — Algoritmik: renk kuantizasyonu, palet eşleme,
-   dithering, kenar temizleme/outline, downscale.
-3. **Motion Motoru (matematiksel çekirdek)** — Easing eğrileri, hareket yayları
-   (arcs), anticipation/overshoot, squash & stretch, smear interpolasyonu,
-   motion trail, kare zamanlaması (hold/ease frames).
-4. **Animasyon Kütüphanesi** — 10-20 parametrik preset: jump, forward dash, back
-   dash, punch/vuruş, teleport/ışınlanma, landing, hurt/knockback, dodge roll,
-   wind-up, slam vb.
-5. **VFX / Impact Katmanı (ürünün kalbi)** — Hit spark, impact ring, speed lines,
-   afterimage/echo, flash, dust puff, screen shake verisi, chromatic tear.
-6. **2.5D Modu** — Perspektif offset, ölçek, y-sort, 8 yönlü varyantlar.
+1. **Sheet Ingest & Normalization** — Defined sprite sheet structure: grid,
+   pivot/anchor points, skeleton markers, direction labels.
+2. **Pixel Art Converter** — Algorithmic: color quantization, palette
+   mapping, dithering, edge cleanup/outline, downscale.
+3. **Motion Engine (mathematical core)** — Easing curves, motion arcs,
+   anticipation/overshoot, squash & stretch, smear interpolation, motion
+   trail, frame timing (hold/ease frames).
+4. **Animation Library** — 10-20 parametric presets: jump, forward dash,
+   back dash, punch/hit, teleport, landing, hurt/knockback, dodge roll,
+   wind-up, slam, etc.
+5. **VFX / Impact Layer (the heart of the product)** — Hit spark, impact
+   ring, speed lines, afterimage/echo, flash, dust puff, screen shake data,
+   chromatic tear.
+6. **2.5D Mode** — Perspective offset, scale, y-sort, 8-directional
+   variants.
 
-## Başarı Kriterleri
+## Success Criteria
 
-- Bir karakter sheet'i yüklendikten sonra çalışan bir "dash + impact"
-  animasyonu **1 dakikadan kısa** sürede üretilebiliyor.
-- Çıktı **non-destructive**: düzenlenebilir Aseprite katmanları ve kareleri
-  olarak geliyor.
-- Presetler parametrik: hız, ağırlık, abartı (exaggeration), kare sayısı, VFX
-  yoğunluğu.
-- Aseprite Extension olarak paketlenip toplulukla paylaşılabiliyor.
+- After loading a character sheet, a working "dash + impact" animation can
+  be produced in **under 1 minute**.
+- Output is **non-destructive**: it comes as editable Aseprite layers and
+  frames.
+- Presets are parametric: speed, weight, exaggeration, frame count, VFX
+  intensity.
+- Can be packaged as an Aseprite Extension and shared with the community.
 
-## Kapsam Dışı (şimdilik)
+## Out of Scope (for now)
 
-Gerçek 3D render/rigging, ses, oyun motoru runtime entegrasyonu (sadece export
-formatları), karakter tasarımı/çizimi üretmek.
+Real 3D render/rigging, sound, game engine runtime integration (export
+formats only), generating character design/art.
 
-## Yol Haritası
+## Roadmap
 
-- **Faz 0 — Araştırma (öncelikli):** Aseprite Lua API sınırları, pixel art
-  dönüştürme algoritmaları, animasyon matematiği, VFX teknikleri, mevcut eklenti
-  ekosistemi, MCP/harici araç entegrasyonları. MVP kapsamı bu fazın çıktısıyla
-  netleşecek.
-- **Faz 1:** Motion çekirdeği + 2D aracı + sheet ingest.
-- **Faz 2:** Animasyon preset kütüphanesinin genişletilmesi.
-- **Faz 3:** VFX/impact katmanı.
-- **Faz 4:** 2.5D aracı.
-- **Faz 5:** Paketleme ve topluluk dağıtımı.
+- **Phase 0 — Research (priority):** Aseprite Lua API limits, pixel art
+  conversion algorithms, animation math, VFX techniques, existing extension
+  ecosystem, MCP/external tool integrations. The MVP scope will become
+  clear from this phase's output.
+- **Phase 1:** Motion core + 2D tool + sheet ingest.
+- **Phase 2:** Expansion of the animation preset library.
+- **Phase 3:** VFX/impact layer.
+- **Phase 4:** 2.5D tool.
+- **Phase 5:** Packaging and community distribution.

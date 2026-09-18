@@ -1,230 +1,245 @@
 # Project Workflow — Puncher
 
-## Yol Gösterici İlkeler
+## Guiding Principles
 
-1. **Plan tek doğruluk kaynağıdır:** Tüm iş `plan.md` içinde takip edilir.
-2. **Tech stack bilinçlidir:** Teknoloji yığınındaki değişiklikler implementasyondan
-   *önce* `tech-stack.md` içinde belgelenir.
-3. **Test-Driven Development:** Fonksiyonellik yazılmadan önce test yazılır.
-4. **Kapsam hedefi:** Matematiksel çekirdek (motion, VFX, pixel dönüşüm
-   algoritmaları — saf, yan etkisiz fonksiyonlar) için **>%80 coverage**.
-   Aseprite `Dialog`/UI katmanı bu hedeften muaftır (headless test edilemez);
-   orada manuel doğrulama yapılır.
-5. **Sanatçı deneyimi önce gelir:** Her karar `product-guidelines.md` içindeki
-   UX prensiplerine (non-destructive, modüler komutlar, makul varsayılanlar)
-   uymak zorundadır.
-6. **Non-interactive & CI-aware:** Komutlar etkileşimsiz çalışacak şekilde
-   seçilir (ör. `aseprite --batch --script ...`).
+1. **The plan is the single source of truth:** All work is tracked within
+   `plan.md`.
+2. **The tech stack is deliberate:** Changes to the tech stack are
+   documented in `tech-stack.md` *before* implementation.
+3. **Test-Driven Development:** Tests are written before functionality.
+4. **Coverage target:** **>80% coverage** for the mathematical core
+   (motion, VFX, pixel transform algorithms — pure, side-effect-free
+   functions). The Aseprite `Dialog`/UI layer is exempt from this target (it
+   cannot be tested headlessly); manual verification is done there.
+5. **Artist experience comes first:** Every decision must comply with the
+   UX principles in `product-guidelines.md` (non-destructive, modular
+   commands, sensible defaults).
+6. **Non-interactive & CI-aware:** Commands are chosen so they run
+   non-interactively (e.g. `aseprite --batch --script ...`).
 
 ## Task Workflow
 
-Her task şu yaşam döngüsünü izler:
+Every task follows this lifecycle:
 
-1. **Task Seç:** `plan.md` içindeki sıradaki task'ı sırayla al.
+1. **Select Task:** Take the next task in order from `plan.md`.
 
-2. **In Progress İşaretle:** İşe başlamadan önce `plan.md` içinde task'ı
-   `[ ]` → `[~]` yap.
+2. **Mark In Progress:** Before starting work, change the task in
+   `plan.md` from `[ ]` → `[~]`.
 
-3. **Başarısız Test Yaz (Red):**
-   - Özellik veya hata düzeltmesi için test dosyası oluştur.
-   - Beklenen davranışı ve kabul kriterlerini net tanımlayan testler yaz.
-   - **KRİTİK:** Testleri çalıştır ve beklendiği gibi başarısız olduklarını
-     doğrula. Başarısız test olmadan devam etme.
+3. **Write a Failing Test (Red):**
+   - Create a test file for the feature or bug fix.
+   - Write tests that clearly define the expected behavior and acceptance
+     criteria.
+   - **CRITICAL:** Run the tests and confirm they fail as expected. Do not
+     proceed without a failing test.
 
-4. **Geçecek Kadar Implement Et (Green):**
-   - Testleri geçirecek minimum kodu yaz.
-   - Test paketini tekrar çalıştır, hepsinin geçtiğini doğrula.
+4. **Implement Just Enough to Pass (Green):**
+   - Write the minimum code needed to pass the tests.
+   - Re-run the test suite and confirm all tests pass.
 
-5. **Refactor (opsiyonel, önerilir):**
-   - Geçen testlerin güvenliğinde kodu sadeleştir, tekrarı kaldır.
-   - Testleri yeniden çalıştır.
+5. **Refactor (optional, recommended):**
+   - Simplify the code and remove duplication under the safety of passing
+     tests.
+   - Re-run the tests.
 
-6. **Kapsamı Doğrula:** Çekirdek algoritma modülleri için coverage raporu
-   çalıştır. Hedef: yeni çekirdek kod için >%80. UI/Dialog dosyaları rapordan
-   hariç tutulur.
+6. **Verify Coverage:** Run the coverage report for the core algorithm
+   modules. Target: >80% for new core code. UI/Dialog files are excluded
+   from the report.
 
-7. **Sapmaları Belgele:** Implementasyon tech stack'ten sapıyorsa:
-   - **DUR**
-   - `tech-stack.md` dosyasını yeni tasarımla güncelle
-   - Değişikliği açıklayan tarihli not ekle
-   - Implementasyona devam et
+7. **Document Deviations:** If the implementation deviates from the tech
+   stack:
+   - **STOP**
+   - Update the `tech-stack.md` file with the new design
+   - Add a dated note explaining the change
+   - Continue the implementation
 
-8. **Kodu Commit'le:**
-   - Task'a ait tüm değişiklikleri stage'le.
-   - Net bir commit mesajı öner, ör. `feat(motion): Add cubic easing evaluator`.
-   - Commit'i yap.
+8. **Commit the Code:**
+   - Stage all changes belonging to the task.
+   - Propose a clear commit message, e.g. `feat(motion): Add cubic easing evaluator`.
+   - Make the commit.
 
-9. **Task Özetini Git Notes ile İliştir:**
-   - **9.1:** Commit hash'ini al (`git log -1 --format="%H"`).
-   - **9.2:** Task adı, değişiklik özeti, oluşturulan/değiştirilen dosya listesi
-     ve değişikliğin "neden"ini içeren detaylı bir not taslağı hazırla.
-   - **9.3:** `git notes add -m "<note content>" <commit_hash>` ile iliştir.
+9. **Attach the Task Summary via Git Notes:**
+   - **9.1:** Get the commit hash (`git log -1 --format="%H"`).
+   - **9.2:** Prepare a detailed note draft containing the task name, a
+     summary of changes, the list of created/modified files, and the "why"
+     of the change.
+   - **9.3:** Attach it with `git notes add -m "<note content>" <commit_hash>`.
 
-10. **Task Commit SHA'sını Kaydet:**
-    - **10.1:** `plan.md` içinde tamamlanan task'ı bul, `[~]` → `[x]` yap ve
-      commit hash'inin ilk 7 karakterini ekle.
-    - **10.2:** Güncellenen içeriği `plan.md` dosyasına yaz.
+10. **Record the Task Commit SHA:**
+    - **10.1:** Find the completed task in `plan.md`, change `[~]` → `[x]`,
+      and append the first 7 characters of the commit hash.
+    - **10.2:** Write the updated content to the `plan.md` file.
 
-11. **Plan Güncellemesini Commit'le:**
-    - `plan.md` dosyasını stage'le.
-    - `conductor(plan): Mark task '<TASK>' as complete` biçiminde commit'le.
+11. **Commit the Plan Update:**
+    - Stage the `plan.md` file.
+    - Commit in the form `conductor(plan): Mark task '<TASK>' as complete`.
 
-### Düzeltme ve Plan Değişikliği Akışları
+### Correction and Plan Change Flows
 
-1. **Uçuş İçi Düzeltmeler:** Task hâlâ `[~]` durumundayken bulunan küçük
-   eksikler aktif implementasyon içinde düzeltilir; commit öncesi testler geçmeli.
-2. **Code Review Düzeltmeleri (`conductor-review`):** Review sırasında bulunan
-   sorunlar için review agent'ı `plan.md` dosyasına bir `Review Fixes` fazı
-   ekler; düzeltmeler formel olarak takip edilir.
-3. **Mantıksal Geri Alma (`conductor-revert`):** Bir task temelden hatalıysa
-   ilgili commit'ler güvenle geri alınır ve task durumu `[ ]` konumuna döner.
+1. **In-Flight Fixes:** Small gaps found while the task is still in `[~]`
+   state are fixed within the active implementation; tests must pass before
+   committing.
+2. **Code Review Fixes (`conductor-review`):** For issues found during
+   review, the review agent adds a `Review Fixes` phase to the `plan.md`
+   file; fixes are tracked formally.
+3. **Logical Revert (`conductor-revert`):** If a task is fundamentally
+   wrong, the relevant commits are safely reverted and the task status
+   returns to `[ ]`.
 
-### Faz Tamamlama Doğrulama ve Checkpoint Protokolü
+### Phase Completion Verification and Checkpoint Protocol
 
-**Tetikleyici:** Bir fazı da sonlandıran task tamamlandığında çalışır.
+**Trigger:** Runs when a task that also concludes a phase is completed.
 
-1. **Protokolü Duyur:** Kullanıcıya fazın bittiğini ve doğrulama protokolünün
-   başladığını bildir.
+1. **Announce the Protocol:** Inform the user that the phase has ended and
+   the verification protocol has begun.
 
-2. **Faz Değişiklikleri İçin Test Kapsamını Sağla:**
-   - **2.1:** `plan.md` içinden önceki fazın checkpoint SHA'sını bul. Yoksa
-     kapsam ilk commit'ten itibarendir.
-   - **2.2:** `git diff --name-only <previous_checkpoint_sha> HEAD` ile değişen
-     dosyaları listele.
-   - **2.3:** Kod dosyaları için (`.md`, `.json` gibi kod olmayanları hariç tut)
-     karşılık gelen test dosyası var mı bak; yoksa oluştur. Önce repodaki mevcut
-     test dosyalarını inceleyip adlandırma ve stil kurallarını öğren. UI/Dialog
-     dosyaları bu zorunluluktan muaftır; onlar manuel doğrulama planına girer.
+2. **Ensure Test Coverage for Phase Changes:**
+   - **2.1:** Find the previous phase's checkpoint SHA in `plan.md`. If
+     there is none, the scope is from the first commit onward.
+   - **2.2:** List the changed files with
+     `git diff --name-only <previous_checkpoint_sha> HEAD`.
+   - **2.3:** For code files (excluding non-code files such as `.md`,
+     `.json`), check whether a corresponding test file exists; create one
+     if not. First examine the existing test files in the repo to learn the
+     naming and style conventions. UI/Dialog files are exempt from this
+     requirement; they go into the manual verification plan instead.
 
-3. **Otomatik Testleri Çalıştır:**
-   - Çalıştırmadan önce kullanacağın tam komutu duyur.
-   - **Örnek duyuru:** "Testleri çalıştıracağım. **Komut:**
+3. **Run Automated Tests:**
+   - Announce the exact command you will use before running it.
+   - **Example announcement:** "I will run the tests. **Command:**
      `aseprite --batch --script tests/run_all.lua`"
-   - Komutu çalıştır.
-   - Testler başarısız olursa kullanıcıyı bilgilendir ve hata ayıklamaya başla.
-     **En fazla iki** düzeltme denemesi yap; hâlâ başarısızsa **dur**, durumu
-     raporla ve kullanıcıdan yönlendirme iste.
+   - Run the command.
+   - If tests fail, inform the user and start debugging. Make **at most
+     two** fix attempts; if still failing, **stop**, report the status, and
+     ask the user for direction.
 
-4. **Manuel Görsel Doğrulama Planı Öner:**
-   - Planı üretmek için önce `product.md`, `product-guidelines.md` ve `plan.md`
-     dosyalarını analiz ederek fazın kullanıcıya dönük hedeflerini çıkar.
-   - Bu proje görsel bir araçtır: doğrulama **üretilen animasyonun görünümü**
-     üzerinden yapılır. Plan şu formatta olmalı:
+4. **Propose a Manual Visual Verification Plan:**
+   - To produce the plan, first analyze the `product.md`,
+     `product-guidelines.md`, and `plan.md` files to derive the phase's
+     user-facing goals.
+   - This project is a visual tool: verification is done through **the
+     appearance of the generated animation**. The plan must be in this
+     format:
 
      ```
-     Otomatik testler geçti. Manuel doğrulama için:
+     Automated tests passed. For manual verification:
 
-     **Manuel Doğrulama Adımları:**
-     1. **Aseprite'ı aç ve şu örnek dosyayı yükle:** `examples/dummy-character.aseprite`
-     2. **Şu komutu çalıştır:** Menü → Puncher → Apply Motion → "Forward Dash"
-     3. **Şunu görmelisin:** 8 karelik yeni bir tag, karakterin ileri doğru
-        hızlanıp yavaşladığı, 3. ve 4. karelerde smear bulunan bir dash;
-        orijinal katman değişmemiş olmalı.
-     4. **Geri alma kontrolü:** Tek `Ctrl+Z` tüm üretimi kaldırmalı.
+     **Manual Verification Steps:**
+     1. **Open Aseprite and load this sample file:** `examples/dummy-character.aseprite`
+     2. **Run this command:** Menu → Puncher → Apply Motion → "Forward Dash"
+     3. **You should see:** A new 8-frame tag, a dash where the character
+        accelerates and decelerates forward, with a smear on frames 3 and 4;
+        the original layer must remain unchanged.
+     4. **Undo check:** A single `Ctrl+Z` should remove the entire
+        generation.
      ```
-   - Mümkünse doğrulama için dışa aktarılmış bir GIF üret ve kullanıcıya göster.
 
-5. **Kullanıcı Onayını Bekle:**
-   - Planı sunduktan sonra sor: "**Bu beklentini karşılıyor mu? Evet ile
-     onayla veya neyin değişmesi gerektiğini yaz.**"
-   - **DUR** ve açık onay gelmeden devam etme.
+   - If possible, produce an exported GIF for verification and show it to
+     the user.
 
-6. **Rapor İçin Hedef Commit'i Belirle:** Checkpoint için boş commit oluşturma;
-   fazdaki son fonksiyonel commit'i hedef al.
+5. **Wait for User Approval:**
+   - After presenting the plan, ask: "**Does this meet your expectations?
+     Confirm with yes or write what needs to change.**"
+   - **STOP** and do not proceed without explicit approval.
 
-7. **Doğrulama Raporunu Git Notes ile İliştir:** Otomatik test komutu, manuel
-   doğrulama adımları ve kullanıcının onayını içeren raporu hedef commit'e
-   `git notes` ile ekle.
+6. **Determine the Target Commit for the Report:** Do not create an empty
+   commit for the checkpoint; target the last functional commit in the
+   phase.
 
-8. **Faz Checkpoint SHA'sını Kaydet:** `plan.md` içindeki faz başlığına
-   `[checkpoint: <sha>]` ekle.
+7. **Attach the Verification Report via Git Notes:** Attach a report
+   containing the automated test command, the manual verification steps,
+   and the user's approval to the target commit using `git notes`.
 
-9. **Plan Güncellemesini Commit'le:**
+8. **Record the Phase Checkpoint SHA:** Add `[checkpoint: <sha>]` to the
+   phase heading in `plan.md`.
+
+9. **Commit the Plan Update:**
    `conductor(plan): Mark phase '<PHASE NAME>' as complete`
 
-10. **Tamamlandığını Duyur.**
+10. **Announce Completion.**
 
 ### Quality Gates
 
-Bir task tamamlandı sayılmadan önce doğrula:
+Verify before a task is considered complete:
 
-- [ ] Tüm testler geçiyor
-- [ ] Çekirdek algoritma kapsamı hedefi karşılıyor (>%80)
-- [ ] Kod `code_styleguides/` kurallarına uyuyor
-- [ ] Tüm public fonksiyonlar belgelenmiş (LuaDoc/docstring)
-- [ ] Lint / statik analiz hatası yok
-- [ ] **Non-destructive garantisi korunuyor** (kullanıcının mevcut katmanları
-      değiştirilmiyor, tüm üretim tek `app.transaction` içinde, tek Ctrl+Z ile
-      geri alınabiliyor)
-- [ ] **Pixel bütünlüğü korunuyor** (grid hizası, istenmeyen anti-aliasing yok,
-      palet dışı renk sessizce eklenmiyor)
-- [ ] Görsel çıktı gözle doğrulandı (tek kare değil, animasyonun tamamı)
-- [ ] Dokümantasyon güncellendi (gerekliyse)
+- [ ] All tests pass
+- [ ] Core algorithm coverage meets the target (>80%)
+- [ ] Code complies with the `code_styleguides/` rules
+- [ ] All public functions are documented (LuaDoc/docstring)
+- [ ] No lint / static analysis errors
+- [ ] **Non-destructive guarantee is preserved** (the user's existing
+      layers are not modified, all generation is within a single
+      `app.transaction`, and can be undone with a single Ctrl+Z)
+- [ ] **Pixel integrity is preserved** (grid alignment, no unwanted
+      anti-aliasing, no off-palette colors silently added)
+- [ ] Visual output has been eyeballed (the whole animation, not just a
+      single frame)
+- [ ] Documentation updated (if necessary)
 
 ## Development Commands
 
-> **NOT:** Bu bölüm `tech-stack.md` kesinleştikten sonra doldurulacaktır
-> (Faz 0 araştırma çıktısına bağlı).
+> **NOTE:** This section will be filled in once `tech-stack.md` is
+> finalized (depends on the Phase 0 research output).
 
 ### Setup
 
 ```bash
-# TBD — tech-stack.md kesinleştiğinde doldurulacak
+# TBD — to be filled in once tech-stack.md is finalized
 ```
 
-### Günlük Geliştirme
+### Daily Development
 
 ```bash
-# TBD — ör. aseprite --batch --script tests/run_all.lua
+# TBD — e.g. aseprite --batch --script tests/run_all.lua
 ```
 
-### Commit Öncesi
+### Before Commit
 
 ```bash
 # TBD — lint + test + format
 ```
 
-## Test Gereksinimleri
+## Test Requirements
 
-### Birim Testleri
+### Unit Tests
 
-- Her çekirdek modülün (easing, arc, squash&stretch, particle, quantizer)
-  karşılık gelen testi olmalı.
-- Testler saf fonksiyonları hedefler: girdi parametreleri → beklenen sayısal
-  çıktı veya piksel matrisi.
-- Hem başarı hem hata durumlarını test et (ör. geçersiz frame sayısı, eksik
+- Every core module (easing, arc, squash&stretch, particle, quantizer)
+  must have a corresponding test.
+- Tests target pure functions: input parameters → expected numeric output
+  or pixel matrix.
+- Test both success and error cases (e.g. invalid frame count, missing
   anchor).
 
-### Entegrasyon Testleri
+### Integration Tests
 
-- Uçtan uca komut akışı: örnek sheet → ingest → pixelate → motion → VFX.
-- Üretilen sprite'ın yapısal doğrulaması: beklenen kare sayısı, katman
-  adlandırması, tag'lar, palet boyutu.
-- Aseprite headless modda (`--batch --script`) çalıştırılabilir olmalı.
+- End-to-end command flow: sample sheet → ingest → pixelate → motion → VFX.
+- Structural validation of the generated sprite: expected frame count,
+  layer naming, tags, palette size.
+- Must be runnable in Aseprite headless mode (`--batch --script`).
 
-### Görsel Regresyon
+### Visual Regression
 
-- Referans çıktılar (altın dosyalar) örnek karakterlerle saklanır; üretilen
-  pikseller hash veya piksel karşılaştırmasıyla doğrulanır.
-- Kasıtlı görsel değişikliklerde referans dosyalar açıkça güncellenir ve commit
-  mesajında belirtilir.
+- Reference outputs (golden files) are stored with sample characters;
+  generated pixels are verified via hash or pixel comparison.
+- For intentional visual changes, reference files are explicitly updated
+  and noted in the commit message.
 
-## Code Review Kontrol Listesi
+## Code Review Checklist
 
-1. **Fonksiyonellik:** Özellik belirtildiği gibi çalışıyor, sınır durumlar
-   (0 kare, tek kare, çok büyük sprite, boş katman) ele alınmış, hata mesajları
-   anlaşılır.
-2. **Kod Kalitesi:** Stil rehberine uygun, tekrar yok, isimler net, gereksiz
-   yorum yok.
-3. **Testler:** Kapsamlı birim testleri, entegrasyon testleri geçiyor.
-4. **Performans:** Per-pixel döngüler gereksiz tekrar etmiyor, büyük sprite'larda
-   kabul edilebilir süre, gereksiz Image kopyası yok.
-5. **Sanatçı Deneyimi:** Non-destructive, parametreler anlaşılır, varsayılanlar
-   makul, önizleme doğru.
+1. **Functionality:** The feature works as specified, edge cases (0
+   frames, single frame, very large sprite, empty layer) are handled, and
+   error messages are clear.
+2. **Code Quality:** Complies with the style guide, no duplication, clear
+   names, no unnecessary comments.
+3. **Tests:** Comprehensive unit tests, integration tests pass.
+4. **Performance:** Per-pixel loops do not repeat unnecessarily, acceptable
+   time on large sprites, no unnecessary Image copies.
+5. **Artist Experience:** Non-destructive, parameters are clear, defaults
+   are sensible, preview is accurate.
 
-## Commit Kuralları
+## Commit Rules
 
-### Mesaj Formatı
+### Message Format
 
 ```
 <type>(<scope>): <description>
@@ -234,17 +249,17 @@ Bir task tamamlandı sayılmadan önce doğrula:
 [optional footer]
 ```
 
-### Tipler
+### Types
 
-- `feat`: Yeni özellik
-- `fix`: Hata düzeltmesi
-- `docs`: Sadece dokümantasyon
-- `style`: Biçimlendirme
-- `refactor`: Davranışı değiştirmeyen kod değişikliği
-- `test`: Eksik testlerin eklenmesi
-- `chore`: Bakım işleri
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `style`: Formatting
+- `refactor`: Code change that does not alter behavior
+- `test`: Adding missing tests
+- `chore`: Maintenance tasks
 
-### Örnekler
+### Examples
 
 ```bash
 git commit -m "feat(motion): Add anticipation-overshoot curve generator"
@@ -254,40 +269,41 @@ git commit -m "test(vfx): Add tests for shockwave ring radius falloff"
 
 ## Definition of Done
 
-Bir task şu koşullarda tamamlanmıştır:
+A task is complete when:
 
-1. Kod belirtime uygun implement edildi
-2. Birim testleri yazıldı ve geçiyor
-3. Çekirdek kapsam hedefi karşılandı
-4. Dokümantasyon tamamlandı (gerekliyse)
-5. Lint / statik analiz temiz
-6. Görsel çıktı gözle doğrulandı ve non-destructive garantisi korundu
-7. Implementasyon notları `plan.md` içine eklendi
-8. Değişiklikler uygun mesajla commit'lendi
-9. Task özeti git note olarak commit'e iliştirildi
+1. Code was implemented according to the specification
+2. Unit tests were written and pass
+3. The core coverage target was met
+4. Documentation was completed (if necessary)
+5. Lint / static analysis is clean
+6. Visual output was eyeballed and the non-destructive guarantee was
+   preserved
+7. Implementation notes were added to `plan.md`
+8. Changes were committed with an appropriate message
+9. The task summary was attached to the commit as a git note
 
-## Sürüm ve Dağıtım
+## Release and Distribution
 
-### Sürüm Öncesi Kontrol Listesi
+### Pre-Release Checklist
 
-- [ ] Tüm testler geçiyor
-- [ ] Çekirdek kapsam hedefi karşılanıyor
-- [ ] Lint hatası yok
-- [ ] Desteklenen minimum Aseprite sürümünde manuel olarak denendi
-- [ ] README ve komut referansı güncel
-- [ ] `package.json` (extension manifest) sürümü güncellendi
-- [ ] Örnek GIF'ler yeniden üretildi
+- [ ] All tests pass
+- [ ] Core coverage target is met
+- [ ] No lint errors
+- [ ] Manually tested on the minimum supported Aseprite version
+- [ ] README and command reference are up to date
+- [ ] `package.json` (extension manifest) version was updated
+- [ ] Sample GIFs were regenerated
 
-### Dağıtım Adımları
+### Distribution Steps
 
-1. Feature dalını ana dala birleştir
-2. Sürümü tag'le (semver)
-3. `.aseprite-extension` paketini üret
-4. Paketi temiz bir Aseprite kurulumunda test et
-5. GitHub release yayınla (changelog ile)
+1. Merge the feature branch into the main branch
+2. Tag the release (semver)
+3. Produce the `.aseprite-extension` package
+4. Test the package on a clean Aseprite installation
+5. Publish a GitHub release (with changelog)
 
-## Sürekli İyileştirme
+## Continuous Improvement
 
-- Workflow'u düzenli gözden geçir, acı noktalarına göre güncelle
-- Öğrenilen dersleri belgele
-- Basit ve sürdürülebilir tut
+- Review the workflow regularly, update it based on pain points
+- Document lessons learned
+- Keep it simple and sustainable

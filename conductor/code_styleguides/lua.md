@@ -1,74 +1,80 @@
 # Lua Style Guide — Puncher (Aseprite)
 
-`general.md` kurallarına ek olarak, bu projeye özgü ve Aseprite API
-araştırmasından (bkz. `conductor/research/01-aseprite-lua-api.md`) doğrudan
-çıkan zorunlu kurallar.
+Mandatory rules specific to this project, in addition to the `general.md`
+rules, derived directly from the Aseprite API research (see
+`conductor/research/01-aseprite-lua-api.md`).
 
-## Katman Disiplini
+## Layer Discipline
 
-- **`core/` içinde Aseprite API'sine referans YASAK.** `app`, `Image`, `Sprite`,
-  `Dialog` gibi globaller `core/` altında hiçbir dosyada geçmemeli. `core/`
-  yalnızca sayı, tablo ve saf fonksiyon üretir (ör. piksel matrisi, transform
-  listesi, parametre tablosu).
-- Aseprite'a dokunan her şey `adapter/` veya `commands/` altında olur.
-- Bu kural test edilebilir: CI'da `core/` üzerinde bir grep kontrolü koşar.
+- **References to the Aseprite API are FORBIDDEN inside `core/`.** Globals
+  such as `app`, `Image`, `Sprite`, `Dialog` must not appear in any file
+  under `core/`. `core/` only produces numbers, tables, and pure functions
+  (e.g. pixel matrix, transform list, parameter table).
+- Anything that touches Aseprite belongs under `adapter/` or `commands/`.
+- This rule is testable: a grep check runs against `core/` in CI.
 
-## Aseprite API Kullanımı
+## Aseprite API Usage
 
-- **`Image:putPixel` kullanılmayacak** — deprecated ve her çağrıda undo kaydı
-  üretir. Yerine `drawPixel`.
-- Performans-kritik piksel işlemleri `Image.bytes` + `rowStride` ham buffer
-  üzerinde yapılır; sonuç tek seferde geri yazılır. Yüzlerce piksel üzerinde
-  `getPixel`/`drawPixel` döngüsü kod incelemesinde gerekçelendirilmelidir.
-- **Kullanıcının belgesini değiştiren her komut `app.transaction` içinde
-  çalışır.** İstisna yok. Hata durumunda `error()` fırlatılır; transaction
-  otomatik geri alır.
-- Rotasyon/ölçekleme için elle interpolasyon yazılmaz; native
-  `Image:resize{ method = 'rotsprite' }` kullanılır.
-- `os.execute`, `io.popen` ve harici süreç çağrısı **yasak** (izin diyaloğu
-  çıkarır, dağıtımı bozar). `io.open` yalnızca kullanıcının açıkça başlattığı
-  export akışında kullanılabilir.
+- **`Image:putPixel` will not be used** — deprecated and generates an undo
+  record on every call. Use `drawPixel` instead.
+- Performance-critical pixel operations are done on the raw `Image.bytes` +
+  `rowStride` buffer; the result is written back in one shot. A
+  `getPixel`/`drawPixel` loop over hundreds of pixels must be justified in
+  code review.
+- **Every command that modifies the user's document runs inside
+  `app.transaction`.** No exceptions. On error, `error()` is thrown; the
+  transaction rolls back automatically.
+- Manual interpolation is not written for rotation/scaling; the native
+  `Image:resize{ method = 'rotsprite' }` is used.
+- `os.execute`, `io.popen`, and external process invocation are
+  **forbidden** (they trigger a permission dialog and break distribution).
+  `io.open` may only be used in an export flow explicitly initiated by the
+  user.
 
-## Dil Kuralları
+## Language Rules
 
-- Her değişken `local`. Global tanımlamak yasak (tek istisna: Aseprite'ın kendi
-  sağladığı globaller).
-- Modüller bir tablo döndürür: `local M = {} ... return M`.
-- Modül yükleme: proje içinde tutarlı olmak kaydıyla `dofile` veya `require`;
-  ikisi karıştırılmaz.
-- `math.floor` / açık yuvarlama kullanılır; örtük sayı→integer dönüşümüne
-  güvenilmez. Piksel koordinatları her zaman integer'a yuvarlanır.
-- Karşılaştırmada `nil` ile `false` ayrımına dikkat; opsiyonel parametrelerde
-  `if x == nil then x = default end` biçimi tercih edilir (`x = x or default`
-  yalnızca `false`'un geçerli değer olmadığı yerlerde).
-- String birleştirme döngü içinde `..` ile yapılmaz; `table.concat` kullanılır.
+- Every variable is `local`. Defining globals is forbidden (the one
+  exception: globals provided by Aseprite itself).
+- Modules return a table: `local M = {} ... return M`.
+- Module loading: `dofile` or `require`, as long as it is consistent within
+  the project; the two are not mixed.
+- `math.floor` / explicit rounding is used; implicit number→integer
+  conversion is not relied upon. Pixel coordinates are always rounded to
+  integers.
+- Pay attention to the distinction between `nil` and `false` in
+  comparisons; for optional parameters, the form
+  `if x == nil then x = default end` is preferred (`x = x or default` only
+  where `false` is not a valid value).
+- String concatenation inside a loop is not done with `..`; `table.concat`
+  is used.
 
-## İsimlendirme
+## Naming
 
-- Dosya ve dizin adları: `snake_case.lua`.
-- Fonksiyon ve değişken: `camelCase`.
-- Modül tabloları ve "sınıf" benzeri yapılar: `PascalCase`.
-- Sabitler: `UPPER_SNAKE_CASE`.
-- Kullanıcıya görünen tüm metinler İngilizce (bkz. `product-guidelines.md`).
+- File and directory names: `snake_case.lua`.
+- Functions and variables: `camelCase`.
+- Module tables and "class"-like structures: `PascalCase`.
+- Constants: `UPPER_SNAKE_CASE`.
+- All user-facing text is in English (see `product-guidelines.md`).
 
-## Dokümantasyon
+## Documentation
 
-- Her public fonksiyonun üstünde kısa bir LuaDoc bloğu: ne yaptığı, parametreler
-  (tip + birim + aralık), dönüş değeri.
-- Birimler açıkça yazılır: `-- @param distance number  Yer değiştirme (piksel)`.
-- Yorum yalnızca "neden" için yazılır; "ne" yaptığını kodun kendisi anlatır.
+- A short LuaDoc block above every public function: what it does,
+  parameters (type + unit + range), return value.
+- Units are written explicitly: `-- @param distance number  Displacement (pixels)`.
+- Comments are written only for "why"; the code itself explains "what" it
+  does.
 
-## Biçimlendirme
+## Formatting
 
-- `stylua` varsayılan ayarları; 2 boşluk girinti, satır uzunluğu 100.
-- `luacheck` uyarısız geçmeli; `globals` listesi Aseprite globalleriyle
-  yapılandırılır (`app`, `Image`, `Sprite`, `Dialog`, `Point`, `Rectangle`,
-  `Color`, `json`, ...).
+- `stylua` default settings; 2-space indentation, line length 100.
+- `luacheck` must pass without warnings; the `globals` list is configured
+  with the Aseprite globals (`app`, `Image`, `Sprite`, `Dialog`, `Point`,
+  `Rectangle`, `Color`, `json`, ...).
 
 ## Test
 
-- `core/` modüllerinin testleri LuaUnit ile yazılır ve sistem Lua'sıyla
-  (Aseprite olmadan) koşar.
-- Test dosyası adı: `tests/core/<modül>_test.lua`.
-- Sayısal testlerde kayan nokta karşılaştırması epsilon ile yapılır
+- Tests for `core/` modules are written with LuaUnit and run with the
+  system Lua (without Aseprite).
+- Test file name: `tests/core/<module>_test.lua`.
+- In numeric tests, floating-point comparison is done with an epsilon
   (`assertAlmostEquals`).

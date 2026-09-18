@@ -13,8 +13,8 @@
 
 ## Research
 
--   [Aseprite Lua API: Yetenekler ve Sınırlar](./research/01-aseprite-lua-api.md)
--   [Görüntüden Pixel Art'a Dönüşüm Algoritmaları](./research/02-pixel-art-conversion.md)
--   [Animasyon Matematiği ve Motion Motoru](./research/03-motion-math.md)
--   [Impact VFX Anatomisi ve 2.5D](./research/04-impact-vfx-and-25d.md)
--   [Ekosistem, Rekabet ve Araç Seçimi](./research/05-ecosystem-and-tooling.md)
+-   [Aseprite Lua API: Capabilities and Limits](./research/01-aseprite-lua-api.md)
+-   [Image-to-Pixel-Art Conversion Algorithms](./research/02-pixel-art-conversion.md)
+-   [Animation Math and Motion Engine](./research/03-motion-math.md)
+-   [Impact VFX Anatomy and 2.5D](./research/04-impact-vfx-and-25d.md)
+-   [Ecosystem, Competition, and Tool Selection](./research/05-ecosystem-and-tooling.md)

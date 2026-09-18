@@ -1,148 +1,156 @@
-# Teknoloji Yığını — Puncher
+# Tech Stack — Puncher
 
-> Bu yığın, `conductor/research/` altındaki beş araştırma raporunun bulgularına
-> dayanır. Değişiklikler implementasyondan **önce** burada belgelenmelidir
-> (bkz. `workflow.md` → Yol Gösterici İlkeler).
+> This stack is based on the findings of the five research reports under
+> `conductor/research/`. Changes must be documented here **before**
+> implementation (see `workflow.md` → Guiding Principles).
 
-## Temel Karar: Saf Lua
+## Core Decision: Pure Lua
 
-Eklenti **tamamen Aseprite'ın gömülü Lua ortamında** çalışır. Harici binary,
-Python yorumlayıcısı veya başka bir runtime bağımlılığı **yoktur**.
+The extension runs **entirely within Aseprite's embedded Lua environment**.
+There is **no** dependency on an external binary, Python interpreter, or any
+other runtime.
 
-Gerekçe:
+Rationale:
 
-- İhtiyaç duyulan tüm ilkel işlemler API'de native mevcut (aşağıdaki tablo).
-- `os.execute` / `io.popen` kullanıcıya "Give Script Full Access" izin diyaloğu
-  çıkarır; bu, topluluğa dağıtılan bir eklenti için ciddi kurulum sürtünmesidir.
-- Aseprite izin sistemini sıkılaştıran bir revizyon yaptı (PR #5965, 14 Eylül
-  2026: `permissions.json` + BLAKE3 bütünlük kontrolü) — harici süreç çağırma
-  yolu daralıyor.
-- Ekosistem normu saf Lua; Python/ImageMagick kullanan bilinen bir Aseprite
-  eklentisi bulunamadı. Cross-platform binary paketleme ayrıca bilinen bir
-  soruna yol açıyor (GitHub Issue #5162: uzantısız executable'lar kurulumda
-  bozuluyor).
+- All the primitive operations we need are natively available in the API
+  (see table below).
+- `os.execute` / `io.popen` trigger the "Give Script Full Access" permission
+  dialog for the user; this is significant setup friction for an extension
+  distributed to the community.
+- Aseprite made a revision tightening the permission system (PR #5965,
+  September 14, 2026: `permissions.json` + BLAKE3 integrity check) — the
+  path to invoking external processes is narrowing.
+- The ecosystem norm is pure Lua; no known Aseprite extension using
+  Python/ImageMagick was found. Cross-platform binary packaging also leads
+  to a known problem (GitHub Issue #5162: extensionless executables get
+  corrupted during installation).
 
-## Platform ve Sürüm Hedefi
+## Platform and Version Target
 
-| Kalem | Karar |
+| Item | Decision |
 | --- | --- |
-| Dil | Lua 5.4 (Aseprite gömülü) |
-| Minimum Aseprite | **v1.3-rc7** (API v26 — `canvas` widget bu sürümde geldi) |
-| Hedeflenen | **v1.3.11+** (stable; `GraphicsContext` on `Image` dahil) |
-| Runtime bağımlılığı | Yok |
+| Language | Lua 5.4 (Aseprite embedded) |
+| Minimum Aseprite | **v1.3-rc7** (API v26 — the `canvas` widget arrived in this version) |
+| Targeted | **v1.3.11+** (stable; includes `GraphicsContext` on `Image`) |
+| Runtime dependency | None |
 
-Sürüm eşiğinin gerekçesi: `canvas` widget (API v26 / v1.3-rc7), native `json`
-(API v25 / v1.3-rc5) ve `Image.bytes` (API v15 / v1.2.30) — üçü birden ancak
-v1.3-rc7'den itibaren garanti.
+Rationale for the version threshold: the `canvas` widget (API v26 /
+v1.3-rc7), native `json` (API v25 / v1.3-rc5), and `Image.bytes` (API v15 /
+v1.2.30) — all three together are only guaranteed from v1.3-rc7 onward.
 
-### Geliştirme Ortamı (2026-09-18 itibarıyla doğrulandı)
+### Development Environment (verified as of 2026-09-18)
 
-| Kalem | Değer |
+| Item | Value |
 | --- | --- |
-| Binary | `~/gitClones/aseprite/build/bin/aseprite` (kaynaktan derlendi, tag `v1.3.18.5`) |
-| Sürüm | `1.3.18.5-dev`, **API v41** |
+| Binary | `~/gitClones/aseprite/build/bin/aseprite` (built from source, tag `v1.3.18.5`) |
+| Version | `1.3.18.5-dev`, **API v41** |
 | Skia | `aseprite-m124` prebuilt (`~/deps/skia`) |
-| Çalıştırıcı | `~/apps/asepriteRun.sh` (arka plan + log) |
+| Runner | `~/apps/asepriteRun.sh` (background + log) |
 
-Headless çalışma (`--batch --script`) doğrulandı: ekran olmadan çalışıyor →
-entegrasyon test stratejisi uygulanabilir. Şu API yetenekleri canlı olarak
-denendi ve çalışıyor: `Image:resize{method='rotsprite'}`, global `json`,
-`Image.bytes`.
+Headless operation (`--batch --script`) has been verified: it runs without a
+display → an integration test strategy is viable. The following API
+capabilities were tested live and work: `Image:resize{method='rotsprite'}`,
+global `json`, `Image.bytes`.
 
-v1.3.15.3 → v1.3.18.5 arasında scripting API v36'dan v41'e çıktı. Bizi
-ilgilendiren davranış değişiklikleri: transaction dışındaki `properties`
-değişiklikleri artık undo adımı üretmiyor (#4568) — komutlar arası metadata
-sözleşmemiz undo geçmişini kirletmeyecek; transaction içindeki layer flag
-değişiklikleri ise undo'ya doğru şekilde giriyor (#2991). Ayrıca görüntüsüz cel
-desteği (#1303) freeze/hitstop karelerinin temsili için kullanılabilir.
+Between v1.3.15.3 and v1.3.18.5, the scripting API went from v36 to v41.
+Behavior changes that concern us: `properties` changes made outside a
+transaction no longer generate an undo step (#4568) — our cross-command
+metadata contract will not pollute the undo history; layer flag changes made
+inside a transaction, on the other hand, correctly enter the undo history
+(#2991). Also, support for imageless cels (#1303) can be used to represent
+freeze/hitstop frames.
 
-## Kullanılacak API Yüzeyleri
+## API Surfaces to Use
 
-| İhtiyaç | API | Not |
+| Need | API | Note |
 | --- | --- | --- |
-| Hızlı piksel işleme | `Image.bytes`, `Image.rowStride` | Ham buffer'ı string olarak al, işle, tek seferde geri yaz. Performans-kritik yol budur. |
-| Piksel okuma/yazma (basit) | `image:pixels()`, `Image:getPixel` | Yalnızca küçük bölgelerde. |
-| Piksel yazma | `Image:drawPixel` | `putPixel` **kullanılmayacak** — deprecated ve her çağrıda undo kaydı üretiyor. |
-| Kompozisyon | `Image:drawImage(img, pos, opacity, blendMode)` | VFX katmanlarının birleştirilmesi. |
-| Pixel-art güvenli ölçekleme/döndürme | `Image:resize{ method='rotsprite' }` | RotSprite native olarak mevcut — kendi implementasyonumuza gerek yok. |
-| Yerleşik komutlar | `app.command.X{...}` | `Rotate`, `SpriteSize`, `CanvasSize` vb. |
-| Non-destructive işlem | `app.transaction(fn, "label")` | Her komut tek transaction; içeride `error()` → otomatik rollback. |
-| Arayüz | `Dialog` + `canvas` widget | `onpaint(ev)` → `ev.context` (GraphicsContext); `onmousemove`, `dlg:repaint()`. Canlı önizleme için. |
-| Metadata | native `json`, `sprite.properties`, `layer.properties`, user data | Komutlar arası sözleşme + dışa aktarılan game-feel verisi. |
-| Anchor/pivot | `Slice` (+ pivot alanı) | Karakter anchor noktalarının saklanması. |
-| Dosya sistemi | `app.fs` | Yol işlemleri ve dizin listeleme (yazma için `io.open`, sadece export akışında). |
+| Fast pixel processing | `Image.bytes`, `Image.rowStride` | Get the raw buffer as a string, process it, write it back in one shot. This is the performance-critical path. |
+| Pixel read/write (simple) | `image:pixels()`, `Image:getPixel` | Only for small regions. |
+| Pixel write | `Image:drawPixel` | `putPixel` **will not be used** — deprecated and generates an undo record on every call. |
+| Composition | `Image:drawImage(img, pos, opacity, blendMode)` | Combining VFX layers. |
+| Pixel-art-safe scaling/rotation | `Image:resize{ method='rotsprite' }` | RotSprite is natively available — no need for our own implementation. |
+| Built-in commands | `app.command.X{...}` | `Rotate`, `SpriteSize`, `CanvasSize`, etc. |
+| Non-destructive operation | `app.transaction(fn, "label")` | Each command is a single transaction; `error()` inside it → automatic rollback. |
+| Interface | `Dialog` + `canvas` widget | `onpaint(ev)` → `ev.context` (GraphicsContext); `onmousemove`, `dlg:repaint()`. For live preview. |
+| Metadata | native `json`, `sprite.properties`, `layer.properties`, user data | Cross-command contract + exported game-feel data. |
+| Anchor/pivot | `Slice` (+ pivot field) | Storing character anchor points. |
+| File system | `app.fs` | Path operations and directory listing (`io.open` for writing, export flow only). |
 
-**Bilinen risk:** `canvas` widget için resmi bir FPS garantisi yok. Canlı
-önizleme performansı Faz 1'de erken bir prototiple ölçülecek; yetersizse
-önizleme tek kare / düşük çözünürlüğe düşürülür (bkz. `product-guidelines.md`
-madde 4).
+**Known risk:** There is no official FPS guarantee for the `canvas` widget.
+Live preview performance will be measured with an early prototype in Phase 1;
+if insufficient, the preview will be downgraded to a single frame / lower
+resolution (see `product-guidelines.md` item 4).
 
-## Kod Mimarisi
+## Code Architecture
 
 ```
-core/        Saf Lua. Aseprite API'sine SIFIR referans.
+core/        Pure Lua. ZERO references to the Aseprite API.
              easing, curves, arcs, squash&stretch, particle sim,
              color (OKLab), quantize, dither, geometry, rng.
-             → LuaUnit ile headless test edilir, coverage hedefi >%80.
-adapter/     Aseprite API sarmalayıcısı. core'un ürettiği saf veriyi
-             (piksel matrisi, transform listesi) Image/Cel/Layer/Tag'e çevirir.
-commands/    Menü komutları ve Dialog'lar (Ingest Sheet, Pixelate,
-             Apply Motion, Add VFX, Export). Coverage hedefinden muaf.
-presets/     Veri: animasyon preset parametreleri, VFX parametreleri, paletler.
-assets/      Örnek karakterler, test fixture'ları, referans (altın) çıktılar.
+             → Tested headless with LuaUnit, coverage target >80%.
+adapter/     Aseprite API wrapper. Converts the pure data produced by core
+             (pixel matrix, transform list) into Image/Cel/Layer/Tag.
+commands/    Menu commands and Dialogs (Ingest Sheet, Pixelate,
+             Apply Motion, Add VFX, Export). Exempt from the coverage target.
+presets/     Data: animation preset parameters, VFX parameters, palettes.
+assets/      Sample characters, test fixtures, reference (golden) outputs.
 ```
 
-Bu ayrım pazarlık konusu değildir: `core/` katmanının Aseprite'tan bağımsız
-olması, hem test stratejisinin hem coverage hedefinin ön koşuludur.
+This separation is non-negotiable: the `core/` layer's independence from
+Aseprite is a precondition for both the test strategy and the coverage
+target.
 
-## Algoritmik Kararlar
+## Algorithmic Decisions
 
-| Alan | Seçim | Elenen |
+| Area | Choice | Rejected |
 | --- | --- | --- |
-| Renk kuantizasyonu | Wu / median-cut + k-means refinement (libimagequant modeli), `Image.bytes` üzerinde | Gerstner et al. joint superpixel+palet optimizasyonu (NPAR 2012) — kalite en yüksek ama iteratif ve saniyeler mertebesinde → **v2** |
-| Renk mesafesi | **OKLab** Öklid mesafesi | RGB (algısal olarak yanlış), CIELAB (mavi bölgede hue kayması) |
-| Dithering | **Bayer (ordered)** 4x4/8x8, varsayılan **kapalı** | Floyd-Steinberg — kareler arası "kayan" gürültü animasyonda titreşim yaratıyor |
-| Rotasyon/ölçekleme | Native `rotsprite` + pixel-grid snapping + sub-pixel accumulator | Naif nearest/bilinear rotasyon (jaggy, bulanıklık) |
-| Deformasyon | Parça bazlı affine (sheet'ten kesilen head/torso/arm/leg + pivot) | Tam mesh warping / ARAP — gereksiz karmaşıklık |
-| Pixelization (AI) | Yok | GAN/diffusion pixelization — kareler arası palet ve grid tutarsızlığı, GPU bağımlılığı → **v2 opsiyonu** |
-| Screen shake / hitstop | JSON metadata olarak dışa aktarım | Aseprite canvas'ında gerçek ekran sarsıntısı mümkün değil |
+| Color quantization | Wu / median-cut + k-means refinement (libimagequant model), on `Image.bytes` | Gerstner et al. joint superpixel+palette optimization (NPAR 2012) — highest quality but iterative and on the order of seconds → **v2** |
+| Color distance | **OKLab** Euclidean distance | RGB (perceptually incorrect), CIELAB (hue shift in the blue region) |
+| Dithering | **Bayer (ordered)** 4x4/8x8, default **off** | Floyd-Steinberg — "shifting" noise between frames creates flicker in animation |
+| Rotation/scaling | Native `rotsprite` + pixel-grid snapping + sub-pixel accumulator | Naive nearest/bilinear rotation (jaggy, blurry) |
+| Deformation | Part-based affine (head/torso/arm/leg cut from the sheet + pivot) | Full mesh warping / ARAP — unnecessary complexity |
+| Pixelization (AI) | None | GAN/diffusion pixelization — palette and grid inconsistency between frames, GPU dependency → **v2 option** |
+| Screen shake / hitstop | Exported as JSON metadata | Real screen shake is not possible within the Aseprite canvas |
 
-## Test ve Kalite Altyapısı
+## Test and Quality Infrastructure
 
-| Katman | Araç | Not |
+| Layer | Tool | Note |
 | --- | --- | --- |
-| Çekirdek birim testleri | **LuaUnit** (sistem Lua 5.4 ile) | `core/` Aseprite'a bağımlı olmadığı için CI'da doğrudan çalışır. |
-| Entegrasyon testleri | `aseprite --batch --script tests/integration/*.lua` | Headless; exit code + assert tabanlı. |
-| Görsel regresyon | Altın PNG karşılaştırma | Referans çıktılar `assets/` altında; kasıtlı değişiklikler commit mesajında belirtilir. |
+| Core unit tests | **LuaUnit** (with system Lua 5.4) | Runs directly in CI since `core/` has no dependency on Aseprite. |
+| Integration tests | `aseprite --batch --script tests/integration/*.lua` | Headless; based on exit code + assert. |
+| Visual regression | Golden PNG comparison | Reference outputs are under `assets/`; intentional changes are noted in the commit message. |
 | Lint | `luacheck` | |
 | Format | `stylua` | |
-| CI | GitHub Actions | Çekirdek testler + lint CI'da koşar. Aseprite gerektiren entegrasyon testleri yerelde koşar; EULA gereği derlenen Aseprite binary'si public artifact olarak paylaşılmaz. |
+| CI | GitHub Actions | Core tests + lint run in CI. Integration tests that require Aseprite run locally; per the EULA, the compiled Aseprite binary is not shared as a public artifact. |
 
-## Paketleme ve Dağıtım
+## Packaging and Distribution
 
-- Format: `.aseprite-extension` (zip içinde `package.json` + Lua kaynakları).
+- Format: `.aseprite-extension` (`package.json` + Lua sources inside a zip).
 - `package.json` → `contributes.scripts: [{ path: "./..." }]`.
-- Lisans: **MIT** (ekosistem normu; thkwznk ve diğer büyük koleksiyonlar MIT).
-- Kanallar: GitHub Releases + itch.io. Merkezi bir resmi eklenti mağazası yok.
-- Aseprite EULA yalnızca Aseprite binary'sinin yeniden dağıtımını yasaklar;
-  üçüncü parti eklentilerin satılması/dağıtılması serbesttir.
+- License: **MIT** (ecosystem norm; thkwznk and other major collections are
+  MIT).
+- Channels: GitHub Releases + itch.io. There is no central official
+  extension store.
+- The Aseprite EULA only prohibits redistribution of the Aseprite binary;
+  selling/distributing third-party extensions is unrestricted.
 
-## Konumlandırma Notu (rekabet)
+## Positioning Note (competition)
 
-`pozac.itch.io` prosedürel Aseprite FX araçları satıyor (Impact/Explosion FX,
-Spin Motion FX vb.) — "prosedürel VFX üreteci" alanı boş değil. Ancak bu araçlar
-karaktere kör: bir cel/selection alıp jenerik transform veya parçacık uygular.
-Puncher'ın farkı **character-aware** olmasıdır: karakter sheet'ini okur (silüet,
-bbox, anchor), ona özgü aksiyon pose'ları üretir ve VFX'i bu harekete
-senkronlar. Bu ayrım hem teknik tasarımı hem de ürünün konumlandırmasını
-yönlendirir.
+`pozac.itch.io` sells procedural Aseprite FX tools (Impact/Explosion FX,
+Spin Motion FX, etc.) — the "procedural VFX generator" space is not empty.
+However, these tools are character-blind: they take a cel/selection and
+apply a generic transform or particle effect. Puncher's difference is being
+**character-aware**: it reads the character sheet (silhouette, bbox,
+anchor), generates action poses specific to it, and synchronizes VFX to this
+motion. This distinction drives both the technical design and the product's
+positioning.
 
-## Referans Alınacak Projeler
+## Reference Projects
 
-| Proje | Ne için |
+| Project | For what |
 | --- | --- |
-| `thkwznk/aseprite-scripts` | Dialog/GUI kod yapısı, tween ("Add Inbetween Frames") yaklaşımı |
-| `PKGaspi/AsepriteScripts` (PathAnimator) | Yol tabanlı çoklu-layer hareket mantığı |
-| `aseprite/Aseprite-Script-Examples` | Resmi API örnekleri |
-| Pozac FX serisi | Prosedürel VFX parametre tasarımı (seeded RNG, preset yapısı, layer ayrımı) |
-| `MalloyTheDev/aseprite-mcp` | Headless batch mimarisi — test harness tasarımı için ilham |
+| `thkwznk/aseprite-scripts` | Dialog/GUI code structure, tween ("Add Inbetween Frames") approach |
+| `PKGaspi/AsepriteScripts` (PathAnimator) | Path-based multi-layer motion logic |
+| `aseprite/Aseprite-Script-Examples` | Official API examples |
+| Pozac FX series | Procedural VFX parameter design (seeded RNG, preset structure, layer separation) |
+| `MalloyTheDev/aseprite-mcp` | Headless batch architecture — inspiration for test harness design |

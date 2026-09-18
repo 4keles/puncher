@@ -1,158 +1,166 @@
-# Araştırma 03 — Animasyon Matematiği ve Motion Motoru Tasarımı
+# Research 03 — Animation Math and Motion Engine Design
 
-*Tarih: 2026-09-18 · Amaç: `core/` katmanının matematiksel temelini kurmak.*
+*Date: 2026-09-18 · Purpose: establish the mathematical foundation of the
+`core/` layer.*
 
-## 1. Easing ve Zamanlama
+## 1. Easing and Timing
 
-Penner easing aileleri: sine, quad, cubic, quart, quint, expo, circ, back,
-elastic, bounce — her biri in / out / in-out formunda. Temel özdeşlik:
+Penner easing families: sine, quad, cubic, quart, quint, expo, circ, back,
+elastic, bounce — each in in / out / in-out form. Fundamental identity:
 
 ```
 easeOut(t) = 1 - easeIn(1 - t)
 ```
 
-Kübik Bezier ile yaklaşık eşlenebilirler (CSS `cubic-bezier(x1,y1,x2,y2)`);
-overshoot içeren back/elastic bile kontrol noktalarıyla modellenebilir.
+They can be approximately mapped with a cubic Bezier (CSS
+`cubic-bezier(x1,y1,x2,y2)`); even back/elastic, which include overshoot,
+can be modeled with control points.
 
-**Düşük kare sayısında (6-12 kare)** sürekli eğri basitçe örneklenmez. İki
-teknik birlikte kullanılır:
+**At low frame counts (6-12 frames)** a continuous curve is not simply
+sampled. Two techniques are used together:
 
-- **Non-uniform frame duration:** kare süreleri eşit değil; hız düşükken kareler
-  sıklaşır (ease-out'ta son karelerde hold/duplicate).
-- Pozisyon örnekleme: `t_i = easeFn(i / (N-1))`, `pos_i = lerp(start, end, t_i)`.
-- **Moving hold:** ekstremlerde (ilk/son kare) 1-3 kare tekrar.
+- **Non-uniform frame duration:** frame durations aren't equal; frames
+  become denser when speed is low (hold/duplicate on the last frames in
+  ease-out).
+- Position sampling: `t_i = easeFn(i / (N-1))`, `pos_i = lerp(start, end,
+  t_i)`.
+- **Moving hold:** 1-3 frame repeat at the extremes (first/last frame).
 
-Kaynaklar: <https://easings.net>, joshondesign.com easing yazısı,
-zz85 cubic-bezier approximations.
+Sources: <https://easings.net>, the joshondesign.com easing article, zz85
+cubic-bezier approximations.
 
-## 2. 12 İlkenin Formülleştirilmesi
+## 2. Formulating the 12 Principles
 
-| İlke | Formül / kural |
+| Principle | Formula / rule |
 | --- | --- |
-| Anticipation | Hareketten önce ters yönde küçük ofset: `-0.15 * displacement`, 2-3 kare |
-| Squash & Stretch | Hacim koruma: `s_x * s_y ≈ 1`. Pratik: `s_y = 1+k`, `s_x = 1/(1+k)`; `k` hıza/momentuma bağlı |
-| Overshoot / follow-through | Sönümlü harmonik osilatör: `x(t) = target + A·e^(-ζωt)·cos(ωt)`; pratikte 1-2 overshoot + 1 settle karesi |
-| Arcs | Quadratic Bezier: `B(t) = (1-t)²P0 + 2(1-t)t·P1 + t²P2`; `P1` yay tepesini belirler |
-| Exaggeration | Tüm ofset/ölçek çarpanlarına uygulanan tek "juice" katsayısı |
+| Anticipation | A small offset in the opposite direction before the motion: `-0.15 * displacement`, 2-3 frames |
+| Squash & Stretch | Volume preservation: `s_x * s_y ≈ 1`. In practice: `s_y = 1+k`, `s_x = 1/(1+k)`; `k` depends on speed/momentum |
+| Overshoot / follow-through | Damped harmonic oscillator: `x(t) = target + A·e^(-ζωt)·cos(ωt)`; in practice 1-2 overshoot + 1 settle frame |
+| Arcs | Quadratic Bezier: `B(t) = (1-t)²P0 + 2(1-t)t·P1 + t²P2`; `P1` determines the apex of the arc |
+| Exaggeration | A single "juice" coefficient applied to all offset/scale multipliers |
 
-3D squash&stretch'in hacim korumalı genel formu (Houdini):
+The volume-preserving general form of 3D squash & stretch (Houdini):
 `L'·D'·H' = ((L - L')·Vp + L')·D·H`, `Vp ∈ [0,1]`.
 
-## 3. Dövüş / Aksiyon Kare Yapısı
+## 3. Fighting / Action Frame Structure
 
-**Startup / Active / Recovery** üçlemesi evrensel:
+The **Startup / Active / Recovery** triad is universal:
 
-- startup: vuruş bağlanmadan önceki kareler
-- active: hasar verebilen pencere
-- recovery: savunmasız dönüş
+- startup: the frames before the hit connects
+- active: the window in which damage can be dealt
+- recovery: the vulnerable return
 
-Dustloop/SF6 wiki verilerine göre normal saldırılar tipik olarak 3-7 startup /
-2-4 active / 8-20 recovery aralığında. 60 FPS'te dash kabaca 10-16 kare (2-4
-startup, 6-10 travel, 2-4 recovery).
+According to Dustloop/SF6 wiki data, normal attacks are typically in the
+range of 3-7 startup / 2-4 active / 8-20 recovery. At 60 FPS a dash is
+roughly 10-16 frames (2-4 startup, 6-10 travel, 2-4 recovery).
 
-**Hitstop / hitlag:** vuruş anında her iki karakter donar. Gerçek örnekler:
-Street Fighter V hafif 8f, orta 12f, ağır 15f; Final Fight (1989) sabit 6f;
-Smash Bros'ta güçlü ataklarda yarım saniyeye kadar.
+**Hitstop / hitlag:** both characters freeze at the moment of the hit. Real
+examples: Street Fighter V light 8f, medium 12f, heavy 15f; Final Fight
+(1989) a fixed 6f; in Smash Bros, up to half a second on powerful attacks.
 
-Kaynaklar: <https://dustloop.com>, <https://www.ssbwiki.com/Hitlag>,
+Sources: <https://dustloop.com>, <https://www.ssbwiki.com/Hitlag>,
 <http://shoryuken.com/2016/06/07/hitstop-in-street-fighter-v-kens-not-so-little-secret/>
 
-## 4. Smear Frame Türleri
+## 4. Smear Frame Types
 
-- **Stretched/elongated smear:** extreme kareler arası gerilmiş tek kare.
-- **Multiple/ghost smear:** aynı pozun alfası azalan birden çok kopyası.
-- **Hybrid:** ikisinin karışımı.
+- **Stretched/elongated smear:** a single stretched frame between extremes.
+- **Multiple/ghost smear:** several copies of the same pose with decreasing
+  alpha.
+- **Hybrid:** a mix of the two.
 
-Pixel art'ta (klasik Castlevania kırbaç örneği) az piksel ile silüet sweep
-yeterli. Prosedürel üretim: hareket vektörü boyunca sprite'ı tek eksende
-scale + shear ile ger, alfa gradyanı uygula, ardından pixel-snap.
+In pixel art (the classic Castlevania whip example), a silhouette sweep with
+few pixels is enough. Procedural generation: stretch the sprite along a
+single axis with scale + shear along the motion vector, apply an alpha
+gradient, then pixel-snap.
 
-Kaynaklar: <https://en.wikipedia.org/wiki/Smear_frame>, rebusfarm.net,
+Sources: <https://en.wikipedia.org/wiki/Smear_frame>, rebusfarm.net,
 animschool.edu
 
 ## 5. Afterimage / Motion Trail
 
-2-5 "echo" kare, üstel azalan alfa: `alpha_i = alpha_0 · decay^i`,
-`decay ≈ 0.5-0.7`. Opsiyonel renk kayması (hue shift veya beyaza/maviye
-yaklaştırma).
+2-5 "echo" frames, exponentially decreasing alpha: `alpha_i = alpha_0 ·
+decay^i`, `decay ≈ 0.5-0.7`. Optional color shift (hue shift or moving toward
+white/blue).
 
-## 6. 2D Deformasyon
+## 6. 2D Deformation
 
-- **Affine:** 2x2 matris + translate (rotate/scale/skew).
-- **Cutout / skeletal** (Spine2D, DragonBones): karakteri parçalara ayır
-  (kafa/gövde/kol/bacak), her parçaya pivot ata, bone hiyerarşisiyle FK/IK.
-- **ARAP** (as-rigid-as-possible) mesh deformasyonu: yerel rijitliği koruyan
-  yumuşak deformasyon.
+- **Affine:** a 2x2 matrix + translate (rotate/scale/skew).
+- **Cutout / skeletal** (Spine2D, DragonBones): split the character into
+  parts (head/torso/arm/leg), assign a pivot to each part, FK/IK via bone
+  hierarchy.
+- **ARAP** (as-rigid-as-possible) mesh deformation: soft deformation that
+  preserves local rigidity.
 
-**Puncher için düşük riskli / yüksek getirili seçim:** sheet'i parçalara kesip
-(head/torso/arm/leg) her parçaya ayrı `Image` + pivot + affine transform
-uygulamak. Tam mesh warping gerekmez.
+**The low-risk / high-payoff choice for Puncher:** cutting the sheet into
+parts (head/torso/arm/leg) and applying a separate `Image` + pivot + affine
+transform to each part. Full mesh warping is not required.
 
-## 7. Pixel Art Rotasyon Sorunu
+## 7. The Pixel Art Rotation Problem
 
-Naif rotasyon/ölçekleme jaggy ve renk bulanıklığı üretir.
+Naive rotation/scaling produces jaggies and color blurring.
 
-**RotSprite** (Xenowhirl, 2007): önce Scale2x ile büyüt, büyütülmüş kopyayı
-döndür, sonra geri örnekle — orijinal palet korunur, kenarlar temiz kalır.
-hqx / Scale2x / Eagle aileleri kenar yönünü tanıyıp yeni pikselleri komşuluk
-kurallarına göre atar.
+**RotSprite** (Xenowhirl, 2007): first upscale with Scale2x, rotate the
+upscaled copy, then resample back down — the original palette is preserved,
+edges stay clean. The hqx / Scale2x / Eagle families recognize edge direction
+and assign new pixels according to neighborhood rules.
 
-Motor için gerekli üç kural:
+Three rules required for the engine:
 
-1. Küçük açılarda (<15°) RotSprite tarzı upscale → rotate → downscale.
-   *(Aseprite'ta bu native: `Image:resize{method='rotsprite'}`.)*
-2. Her kare üretiminden sonra **pixel-grid snapping** (pozisyonu tam piksele
-   yuvarla).
-3. **Sub-pixel accumulator:** yuvarlama artığını bir sonraki kareye taşı, aksi
-   halde round-off hatası birikir.
+1. At small angles (<15°), a RotSprite-style upscale → rotate → downscale.
+   *(This is native in Aseprite: `Image:resize{method='rotsprite'}`.)*
+2. **Pixel-grid snapping** after every frame is generated (round the
+   position to a whole pixel).
+3. **Sub-pixel accumulator:** carry the rounding remainder to the next
+   frame, otherwise round-off error accumulates.
 
-## 8. Referanslar
+## 8. References
 
 Steve Swink — *Game Feel*; Jan Willem Nijman — *The Art of Screenshake*
-(Vlambeer, INDIGO 2013); Dustloop Wiki "Using Frame Data"; SmashWiki "Hitlag";
-<https://easings.net>; RotSprite orijinal forum konusu (Sonic Retro);
-Spine2D / DragonBones dokümantasyonu.
+(Vlambeer, INDIGO 2013); Dustloop Wiki "Using Frame Data"; SmashWiki
+"Hitlag"; <https://easings.net>; the original RotSprite forum thread (Sonic
+Retro); Spine2D / DragonBones documentation.
 
-## Motion Motoru Tasarım Önerisi
+## Motion Engine Design Proposal
 
-Her preset fonksiyonunun aldığı parametreler:
+Parameters taken by each preset function:
 
-| Parametre | Tip | Açıklama |
+| Parameter | Type | Description |
 | --- | --- | --- |
 | `frameCount` | int | dash≈8, punch≈6, jump≈12 |
-| `speed` | 0-2 | zaman ölçeği (düşük = ağır, yüksek = snappy) |
-| `weight` | 0-2 | momentum / overshoot / squash şiddeti |
-| `exaggeration` | 0-2 | tüm ofset ve ölçek çarpanlarına uygulanan genel katsayı |
-| `distance` | px | pivot'a göre hedef yer değiştirme |
+| `speed` | 0-2 | time scale (low = heavy, high = snappy) |
+| `weight` | 0-2 | momentum / overshoot / squash intensity |
+| `exaggeration` | 0-2 | overall coefficient applied to all offset and scale multipliers |
+| `distance` | px | target displacement relative to the pivot |
 | `easingType` | enum | easeOutCubic, easeOutBack, easeInExpo... |
-| `anticipationFrames` / `overshootFrames` / `holdFrames` | int | preset başına override edilebilir |
+| `anticipationFrames` / `overshootFrames` / `holdFrames` | int | can be overridden per preset |
 | `smearEnabled`, `trailEnabled` (`echoCount`, `decay`) | bool/param | |
 
-**Forward dash örneği — üretim adımları:**
+**Forward dash example — generation steps:**
 
-1. Ana hareket kareleri için normalize zaman dizisi:
-   `t_i = easingType(i / (frameCount - anticipationFrames - overshootFrames - 1))`
-2. İlk `anticipationFrames` karede ters ofset:
-   `offset = -0.15 * distance * exaggeration`; squash uygula
-   (`s_y = 0.85`, `s_x = 1/0.85`).
-3. Ana karelerde `pos_i = pivot + distance * t_i`. Jump için parabolik arc:
-   `y = -4h·t·(1-t)`.
-4. Hızın en yüksek olduğu orta karelerde stretch:
-   `s_x = 1 + weight·0.3·|v_i|`, `s_y = 1/s_x`; hareket eksenine hizalı, affine
-   transform + `rotsprite` ile piksel bütünlüğü korunarak.
-5. Punch gibi presetlerde `active` karelerde hitbox flag'i set et; vuruş anında
-   `hitstopFrames = round(3 + 5·weight)` kadar hareketi dondur (pozisyon sabit,
-   squash artır).
-6. Son `overshootFrames` karede sönümlü osilasyon:
-   `x(t) = target + A·e^(-ζωt)·cos(ωt)`; `A` ve `ζ` `weight`'e bağlı.
-7. Her kareden sonra pozisyonu pixel-grid'e yuvarla, kesir farkını accumulator
-   ile bir sonraki kareye taşı.
-8. `smearEnabled` ise en hızlı karede stretch smear veya önceki 2-3 karenin alfa
-   azalan kopyaları; `trailEnabled` ise ayrı layer'da `echoCount` kopya,
-   `alpha_i = 0.5·decay^i`.
-9. Kareleri ayrı `Image` nesneleri olarak cel'lere yaz; non-uniform süre ata
-   (hold kareler 2x, hızlı geçişler 1x).
+1. Normalized time sequence for the main motion frames:
+   `t_i = easingType(i / (frameCount - anticipationFrames -
+   overshootFrames - 1))`
+2. Reverse offset on the first `anticipationFrames` frames:
+   `offset = -0.15 * distance * exaggeration`; apply squash (`s_y = 0.85`,
+   `s_x = 1/0.85`).
+3. On the main frames, `pos_i = pivot + distance * t_i`. For jump, a
+   parabolic arc: `y = -4h·t·(1-t)`.
+4. Stretch on the middle frames where speed is highest:
+   `s_x = 1 + weight·0.3·|v_i|`, `s_y = 1/s_x`; aligned to the motion axis,
+   with pixel integrity preserved via affine transform + `rotsprite`.
+5. In presets like punch, set the hitbox flag on `active` frames; at the
+   moment of the hit, freeze the motion for
+   `hitstopFrames = round(3 + 5·weight)` (position fixed, increase squash).
+6. Damped oscillation on the final `overshootFrames` frames:
+   `x(t) = target + A·e^(-ζωt)·cos(ωt)`; `A` and `ζ` depend on `weight`.
+7. After each frame, round the position to the pixel grid, carrying the
+   fractional remainder to the next frame via the accumulator.
+8. If `smearEnabled`, a stretch smear on the fastest frame, or
+   alpha-decreasing copies of the previous 2-3 frames; if `trailEnabled`,
+   `echoCount` copies in a separate layer, `alpha_i = 0.5·decay^i`.
+9. Write the frames to cels as separate `Image` objects; assign non-uniform
+   duration (hold frames 2x, fast transitions 1x).
 
-Bu parametrik yapı sayesinde 10-20 preset aynı çekirdek fonksiyonlardan
-(easing sampler, arc generator, squash&stretch, smear/trail compositor,
-pixel-snap) türetilir; presetler yalnızca parametre setleriyle ayrışır.
+Thanks to this parametric structure, 10-20 presets are derived from the same
+core functions (easing sampler, arc generator, squash&stretch, smear/trail
+compositor, pixel-snap); presets differ only by their parameter sets.

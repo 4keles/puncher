@@ -1,113 +1,122 @@
-# Araştırma 05 — Ekosistem, Rekabet ve Araç Seçimi
+# Research 05 — Ecosystem, Competition, and Tool Selection
 
-*Tarih: 2026-09-18 · Amaç: konumlandırma, referans projeler, bağımlılık ve test
-stratejisi.*
+*Date: 2026-09-18 · Purpose: positioning, reference projects, dependency and
+test strategy.*
 
-## 1. Mevcut Aseprite Script/Extension Ekosistemi
+## 1. Existing Aseprite Script/Extension Ecosystem
 
-| Proje | URL | Bizim için değeri |
+| Project | URL | Value for us |
 | --- | --- | --- |
-| **thkwznk/aseprite-scripts** | <https://github.com/thkwznk/aseprite-scripts> | En bilinen genel koleksiyon: advanced scaling, "Add Inbetween Frames" (tween), Analyze Colors. Temiz Lua yapısı ve dialog/GUI pattern'leri için birincil referans. |
-| **PKGaspi/AsepriteScripts** | <https://github.com/PKGaspi/AsepriteScripts> | Export araçları + **PathAnimator** (yol tabanlı çoklu-layer animasyon). Path hareketi için doğrudan referans. |
-| **projectitis/aseprite-community-script-collection** | <https://github.com/projectitis/aseprite-community-script-collection> | Tween, "Ghost Images" (onion-skin benzeri), Palettize. Topluluk katkı formatı. |
-| **sandord/aseprite-scripts** | <https://github.com/sandord/aseprite-scripts> | Genel örnekler. |
-| **aseprite/extensions** (resmi) | <https://github.com/aseprite/extensions> | Resmi dağıtım referansı. |
-| **aseprite/Aseprite-Script-Examples** | <https://github.com/aseprite/Aseprite-Script-Examples> | Resmi API örnekleri. |
-| **Tween Machine** | <https://carbscode.itch.io/the-tween-machine> | Keyframe arası interpolasyon toolbar'ı. |
-| **Asepritely** | <https://iivii.itch.io/asepritely> | Pay-what-you-want script kütüphanesi. |
-| **Pozac FX serisi** | <https://pozac.itch.io> | **En yakın rakip** — aşağıya bakınız. |
-| **JanBremec — Tiny Impact & Motion** | <https://janbremec.itch.io/tiny-impact-motion-pixel-fx> | 18 hazır hit/dash/landing FX (PNG + .aseprite). Prosedürel değil, statik asset paketi. |
+| **thkwznk/aseprite-scripts** | <https://github.com/thkwznk/aseprite-scripts> | The best-known general collection: advanced scaling, "Add Inbetween Frames" (tween), Analyze Colors. Primary reference for clean Lua structure and dialog/GUI patterns. |
+| **PKGaspi/AsepriteScripts** | <https://github.com/PKGaspi/AsepriteScripts> | Export tools + **PathAnimator** (path-based multi-layer animation). Direct reference for path-based movement. |
+| **projectitis/aseprite-community-script-collection** | <https://github.com/projectitis/aseprite-community-script-collection> | Tween, "Ghost Images" (onion-skin-like), Palettize. Community contribution format. |
+| **sandord/aseprite-scripts** | <https://github.com/sandord/aseprite-scripts> | General examples. |
+| **aseprite/extensions** (official) | <https://github.com/aseprite/extensions> | Official distribution reference. |
+| **aseprite/Aseprite-Script-Examples** | <https://github.com/aseprite/Aseprite-Script-Examples> | Official API examples. |
+| **Tween Machine** | <https://carbscode.itch.io/the-tween-machine> | Keyframe interpolation toolbar. |
+| **Asepritely** | <https://iivii.itch.io/asepritely> | Pay-what-you-want script library. |
+| **Pozac FX series** | <https://pozac.itch.io> | **Closest competitor** — see below. |
+| **JanBremec — Tiny Impact & Motion** | <https://janbremec.itch.io/tiny-impact-motion-pixel-fx> | 18 ready-made hit/dash/landing FX (PNG + .aseprite). Not procedural, a static asset pack. |
 
-## 2. Boşluk Analizi — Dürüst Değerlendirme
+## 2. Gap Analysis — Honest Assessment
 
-**Doğrudan rakip var.** Pozac (<https://pozac.itch.io>) bir Aseprite prosedürel
-FX stüdyosu işletiyor:
+**There is a direct competitor.** Pozac (<https://pozac.itch.io>) runs an
+Aseprite procedural FX studio:
 
 - **Impact/Explosion FX** ($4.99) — flash, shockwave, debris, smoke, bolt;
   seeded RNG, gravity/drag/turbulence/vortex
 - **Spin Motion FX** ($1.99) — rotation/scale/orbit/bounce/shake; squash &
-  stretch, impact animasyonu için öneriliyor
-- Ayrıca Magic Spell FX, Smoke Flow FX, Wave Motion FX, Path Animator FX
+  stretch, recommended for impact animation
+- Also Magic Spell FX, Smoke Flow FX, Wave Motion FX, Path Animator FX
 
-Yani "prosedürel impact VFX üretimi" boşluğu **kapalı**.
+In other words, the "procedural impact VFX generation" gap is **closed**.
 
-**Ancak** bu araçlar jenerik transform/parçacık üreteçleri: karaktere ve sheet'e
-kördürler, bir cel/selection'ı girdi alıp döndürür veya parçalar. **Karakter
-sheet'ini okuyup** (silüet, bbox, anchor noktaları) buna göre dash/punch/jump/
-teleport pose'ları otomatik üreten hiçbir araç bulunamadı.
+**However**, these tools are generic transform/particle generators: they
+are blind to the character and the sheet, taking a cel/selection as input
+and rotating or fragmenting it. No tool was found that **reads the
+character sheet** (silhouette, bbox, anchor points) and automatically
+generates dash/punch/jump/teleport poses accordingly.
 
-**Farkımız:** *character-aware* prosedürel aksiyon + senkron impact VFX
-kombinasyonu — yalnızca bir VFX katmanı değil.
+**Our difference:** the combination of *character-aware* procedural action
++ synchronized impact VFX — not just a VFX layer.
 
-## 3. Aseprite Dışı Araçlar
+## 3. Tools Outside Aseprite
 
-| Araç | Fiyat | Not |
+| Tool | Price | Note |
 | --- | --- | --- |
-| **PixelOver** (<https://pixelover.io>) | $19-30 | Godot tabanlı; bone rig + IK, non-destructive dithering/indexation, 3D import. En yakın ticari ürün ama ayrı bir editör, Aseprite'a entegre değil. |
-| **Juice FX** (CodeManu) | ~$15 | Oyun motoru içi "juice" (flash/shake/wobble); spritesheet export var, Aseprite'ta çalışmıyor. |
-| **Pixelorama** | MIT, ücretsiz | Hızla olgunlaşıyor; prosedürel VFX yok. |
-| **LibreSprite / Piskel** | ücretsiz | Prosedürel VFX yok; Piskel pasif. |
+| **PixelOver** (<https://pixelover.io>) | $19-30 | Godot-based; bone rig + IK, non-destructive dithering/indexation, 3D import. Closest commercial product, but a separate editor, not integrated into Aseprite. |
+| **Juice FX** (CodeManu) | ~$15 | In-engine "juice" (flash/shake/wobble); has spritesheet export, doesn't run in Aseprite. |
+| **Pixelorama** | MIT, free | Maturing rapidly; no procedural VFX. |
+| **LibreSprite / Piskel** | free | No procedural VFX; Piskel is dormant. |
 
-## 4. Harici Bağımlılık Değerlendirmesi
+## 4. External Dependency Assessment
 
-- FFmpeg bundling örneği var (webm export; PATH'te ffmpeg gerekiyor) — precedent
-  mevcut.
-- Ancak GitHub Issue #5162: uzantı içine binary gömmek riskli — uzantısız
-  executable'lar kurulumda "Aseprite.app Document" formatına dönüştürülüp
-  çalışmaz hale geliyor; workaround dosya uzantısı gerektiriyor.
-- Python/Pillow/ImageMagick kullanan bilinen bir Aseprite extension **bulunamadı**;
-  ekosistem neredeyse tamamen saf Lua.
-- Dağıtım maliyeti (cross-platform binary, güvenlik izni istemi, kurulum
-  sürtünmesi) yüksek.
+- There is a precedent for FFmpeg bundling (webm export; requires ffmpeg on
+  PATH) — a precedent exists.
+- However, GitHub Issue #5162: embedding a binary inside an extension is
+  risky — extensionless executables get converted to the "Aseprite.app
+  Document" format on install and become non-functional; the workaround
+  requires a file extension.
+- No known Aseprite extension using Python/Pillow/ImageMagick **was
+  found**; the ecosystem is almost entirely pure Lua.
+- The distribution cost (cross-platform binary, security permission
+  prompts, installation friction) is high.
 
-**Karar: harici bağımlılıktan kaçınılıyor.**
+**Decision: avoid external dependencies.**
 
-## 5. MCP ve AI Entegrasyonu
+## 5. MCP and AI Integration
 
-Aseprite'a özel birden fazla MCP server mevcut:
+Several Aseprite-specific MCP servers exist:
 
-- <https://github.com/MalloyTheDev/aseprite-mcp> (96 tool, headless batch
-  üzerinden)
+- <https://github.com/MalloyTheDev/aseprite-mcp> (96 tools, via headless
+  batch)
 - <https://github.com/willibrandon/pixel-mcp>
 - <https://github.com/vchopDev/libresprite-mcp>
 - npm: `@iborymagic/aseprite-mcp`
 
-Bunlar doğrudan geliştirme aracımız değil, ancak **"Aseprite'ı headless/batch
-modda script üreterek yönetme" mimarisi** test harness tasarımımız için hazır
-referans. Blender MCP ayrı bir alan, doğrudan ilgisiz.
+These are not directly our development tool, but the **architecture of
+"managing Aseprite in headless/batch mode by generating scripts"** is a
+ready-made reference for our test harness design. Blender MCP is a separate
+domain, not directly relevant.
 
-## 6. Lisans ve Dağıtım
+## 6. License and Distribution
 
-- Aseprite EULA yalnızca **Aseprite binary'sinin** yeniden dağıtımını yasaklar;
-  kendi script/extension'ınızı satmak serbest (Pozac'ın tüm mağazası bunu
-  doğruluyor).
-- Açık kaynakta **MIT** en yaygın tercih (thkwznk).
-- Ücretli + ücretsiz karma model (itch.io) ekosistemde normalleşmiş.
+- The Aseprite EULA only prohibits redistribution of the **Aseprite binary
+  itself**; selling your own script/extension is permitted (Pozac's entire
+  store confirms this).
+- **MIT** is the most common choice for open source (thkwznk).
+- A mixed paid + free model (itch.io) has become normalized in the
+  ecosystem.
 
-## 7. Test Altyapısı
+## 7. Test Infrastructure
 
-- `aseprite --batch --script` headless çalışıyor, CI için uygun.
-- GitHub Actions ile kaynaktan derleme yaygın ve sahibi tarafından onaylı
-  (setup-aseprite-cli-action, aseprite-auto-build). Steam binary'si otomasyona
-  kapalı; EULA gereği derlenen binary public artifact olarak paylaşılmamalı.
-- **LuaUnit** ve **busted** genel Lua test framework'leri mevcut, ancak
-  Aseprite-Lua runtime'ına (app/Sprite gibi özel globaller) doğrudan entegre bir
-  örnek bulunamadı.
+- `aseprite --batch --script` runs headless, suitable for CI.
+- Building from source with GitHub Actions is common and endorsed by the
+  owner (setup-aseprite-cli-action, aseprite-auto-build). The Steam binary
+  is closed to automation; per the EULA, the compiled binary must not be
+  shared as a public artifact.
+- **LuaUnit** and **busted** are general Lua test frameworks that exist,
+  but no example was found that integrates directly with the Aseprite-Lua
+  runtime (special globals like app/Sprite).
 
-**Sonuç:** mantığı saf Lua modüllerine ayırıp LuaUnit ile izole test etmek;
-Aseprite'a bağımlı kısmı batch-mode script + exit code assertion ile test etmek.
+**Conclusion:** separate the logic into pure Lua modules and test it in
+isolation with LuaUnit; test the Aseprite-dependent part with a batch-mode
+script + exit code assertion.
 
-## Stratejik Çıkarım
+## Strategic Takeaway
 
-1. **Rekabet:** Pozac prosedürel FX alanını dolduruyor. "Sadece VFX üretici"
-   konumlandırması zayıf. Fark: karakter sheet'ini okuyup ona özgü aksiyon
-   pose'ları + senkron VFX üretmek — *character-aware* vurgusu öne çıkmalı.
-2. **Öğrenilecekler:** thkwznk'tan dialog/GUI kod yapısı, Gaspi'nin
-   PathAnimator'ından path tabanlı hareket mantığı, Pozac'tan prosedürel VFX
-   parametre tasarımı (seeded RNG, preset yapısı, layer ayrımı).
-3. **Harici bağımlılık:** Kaçın — saf Lua'da kal. Tek gerekçe gelişmiş
-   dithering/quantization ihtiyacı olursa yeniden değerlendirilir.
-4. **MCP/araçlar:** Aseprite'a özel MCP geliştirme için gerekmiyor;
-   `MalloyTheDev/aseprite-mcp` mimarisi test harness tasarımı için incelenmeli.
-5. **Test stratejisi:** Mantık katmanı saf Lua + LuaUnit (izole); Aseprite'a
-   bağımlı katman `--batch --script` ile entegrasyon testi.
+1. **Competition:** Pozac fills the procedural FX space. A "just a VFX
+   generator" positioning is weak. The difference: reading the character
+   sheet and generating action poses specific to it + synchronized VFX —
+   the *character-aware* emphasis must come to the fore.
+2. **Lessons to learn:** dialog/GUI code structure from thkwznk, path-based
+   movement logic from Gaspi's PathAnimator, procedural VFX parameter
+   design from Pozac (seeded RNG, preset structure, layer separation).
+3. **External dependency:** Avoid — stay in pure Lua. The only
+   justification for reconsidering would be a need for advanced
+   dithering/quantization.
+4. **MCP/tools:** not needed for Aseprite-specific development; the
+   `MalloyTheDev/aseprite-mcp` architecture should be studied for test
+   harness design.
+5. **Test strategy:** logic layer in pure Lua + LuaUnit (isolated);
+   Aseprite-dependent layer integration-tested with `--batch --script`.
