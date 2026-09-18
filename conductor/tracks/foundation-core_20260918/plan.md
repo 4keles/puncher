@@ -61,12 +61,12 @@ plan update.
   - [x] Implement the sampler
   - [x] Refactor and re-run
 
-- [~] Task: Arcs
-  - [ ] Write failing tests: the quadratic curve passes through its endpoints,
+- [x] Task: Arcs `e1a8ee8`
+  - [x] Write failing tests: the quadratic curve passes through its endpoints,
         the control point raises the midpoint as expected, the parabolic helper
         peaks at the halfway point and returns to zero
-  - [ ] Implement arc evaluation
-  - [ ] Refactor and re-run
+  - [x] Implement arc evaluation
+  - [x] Refactor and re-run
 
 - [ ] Task: Transform, pixel snapping and the sub-pixel accumulator
   - [ ] Write failing tests: composed transforms equal the expected mapping,
