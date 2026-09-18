@@ -1,0 +1,24 @@
+Task: Transform, pixel snapping and the sub-pixel accumulator (Phase 2)
+
+Red phase: tests first, failed on the missing module. Green phase: eleven new
+tests pass, thirty-seven in total.
+
+What the tests pin down:
+- Moving, stretching and turning behave as expected, including a quarter turn
+  mapping one axis onto the other.
+- Combining two transforms produces the same result as applying them one after
+  the other, with the order stated explicitly, since getting that backwards is
+  the classic mistake and silently produces plausible-looking wrong motion.
+- Snapping produces whole numbers.
+- The accumulator emits whole numbers only.
+- Over three hundred steps of a tenth of a pixel, the total lands within half a
+  pixel of the truth. Rounding each step independently would have produced zero
+  movement across that entire sequence, which is the exact failure this exists
+  to prevent.
+- Negative movement behaves the same way.
+- The carried remainder never grows beyond half a pixel.
+
+Design note:
+A transform is stored as the six meaningful numbers of a matrix rather than a
+nested structure, because every later layer will build these per frame and the
+cost of allocating them adds up.
