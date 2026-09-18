@@ -107,7 +107,7 @@ plan update.
   - [x] Implement the producer on top of the core modules
   - [x] Refactor and re-run
 
-- [ ] Task: Aseprite adapter
+- [~] Task: Aseprite adapter
   - [ ] Write a failing integration test, executed by the real binary, that
         expects the produced frames, cels and tag to exist and the source layer
         to be unchanged
