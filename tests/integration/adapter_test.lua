@@ -96,6 +96,15 @@ function M.run(support)
   support.assertEquals(tag.fromFrame.frameNumber, result.firstFrame, "tag start")
   support.assertEquals(tag.toFrame.frameNumber, result.firstFrame + #path - 1, "tag end")
 
+  -- The whole result must come back out in one step. Everything above was
+  -- written inside a single transaction precisely so the artist never has to
+  -- press undo eleven times to get rid of one mistake.
+  app.command.Undo()
+
+  support.assertEquals(#sprite.frames, originalFrameCount, "frame count after one undo")
+  support.assertEquals(#sprite.layers, 1, "layer count after one undo")
+  support.assertEquals(#sprite.tags, 0, "tag count after one undo")
+
   sprite:close()
 end
 

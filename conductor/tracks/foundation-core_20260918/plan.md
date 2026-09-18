@@ -115,13 +115,13 @@ plan update.
   - [~] Confirm a single undo removes the entire result (checked visually with
         the demonstration command in the next task)
 
-- [ ] Task: Sample character generator
+- [~] Task: Sample character generator
   - [ ] Write a script that generates the bundled sample character
         deterministically
   - [ ] Confirm the generated file is small, has a known palette and is
         committed as a fixture
 
-- [ ] Task: Demonstration command
+- [~] Task: Demonstration command
   - [ ] Wire the producer and adapter behind the menu entry
   - [ ] Run it on the sample character and watch the resulting animation
   - [ ] Confirm the original layer is untouched and one undo clears everything
