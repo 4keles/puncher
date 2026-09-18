@@ -7,6 +7,11 @@
   "base_sha": "50db47a5573cfac163442f2bbc4e7a445631ae5e",
   "branch": "track/foundation-core_20260918",
   "closing_condition_source": "operator",
+  "approval_delegation": {
+    "granted": "2026-09-18",
+    "scope": "Every step already written into this track's plan, including third-party development tooling installs and per-task commits, may proceed without asking again.",
+    "limits": "Anything not in the plan still requires the operator's approval before it is done. Closure itself is not delegated: the closing condition is demonstrated and presented before the track is called complete."
+  },
   "phases": 4,
   "gates": {
     "premise_review": "passed",
