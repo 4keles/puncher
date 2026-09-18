@@ -82,16 +82,17 @@ plan update.
   - [x] Implement the random source
   - [x] Refactor and re-run
 
-- [~] Task: Layer boundary check
-  - [ ] Write a failing test that introduces a deliberate violation and expects
+- [x] Task: Layer boundary check `ac935c9`
+  - [x] Write a failing test that introduces a deliberate violation and expects
         the check to report it
-  - [ ] Implement the check as a command that can also run in continuous
+  - [x] Implement the check as a command that can also run in continuous
         integration
-  - [ ] Remove the deliberate violation and confirm the check passes
+  - [x] Remove the deliberate violation and confirm the check passes
 
-- [~] Task: Core coverage report
-  - [ ] Produce a coverage report for the core modules
-  - [ ] Confirm it meets the target, or add the missing tests until it does
+- [x] Task: Core coverage report `ac935c9`
+  - [x] Produce a coverage report for the core modules
+  - [x] Confirm it meets the target, or add the missing tests until it does
+        (every core module fully covered, target was eighty percent)
 
 - [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
 
