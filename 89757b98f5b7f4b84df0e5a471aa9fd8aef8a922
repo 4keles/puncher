@@ -1,0 +1,24 @@
+Phase 3 verification and checkpoint (Track foundation-core_20260918)
+
+Automated checks:
+- Sixty-three unit tests pass outside the application.
+- Twenty-nine checks pass inside the real application, including the proof that
+  one undo removes the entire produced result.
+- The core layer never reaches into the application.
+- Linter and formatter clean across twenty-five files.
+
+Visual verification, done without a desktop session:
+The demonstration was rendered in batch mode and its frames inspected directly.
+The character holds for two beats, takes a large step, then progressively
+smaller ones as it slows, settles exactly on its target and holds there. That
+is the decelerating dash the preset describes, and it is the first time the
+whole chain - curve, sampling, rounding, frames, cels, tag - has been seen
+working as one thing.
+
+What exists now: a menu command that turns artwork into an animation, a
+generated reference character, a preset carrying the numbers that shape the
+motion, and two proofs that the result is safe - the original artwork is
+untouched and a single undo removes everything.
+
+Remaining for this track: the automated run on the remote, a sweep for
+machine-specific values, and the closing demonstration.
