@@ -68,7 +68,7 @@ plan update.
   - [x] Implement arc evaluation
   - [x] Refactor and re-run
 
-- [ ] Task: Transform, pixel snapping and the sub-pixel accumulator
+- [~] Task: Transform, pixel snapping and the sub-pixel accumulator
   - [ ] Write failing tests: composed transforms equal the expected mapping,
         every emitted position is an integer, the accumulated remainder never
         lets total displacement drift from the requested value across a long
