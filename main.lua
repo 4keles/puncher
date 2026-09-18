@@ -24,7 +24,7 @@ function init(plugin)
         title = "Puncher",
         text = {
           "Procedural action animation for pixel art characters.",
-          "Tools appear under File > Scripts > Puncher.",
+          "Tools appear under File > Puncher.",
         },
       }
     end,

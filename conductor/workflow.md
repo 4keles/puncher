@@ -247,6 +247,23 @@ lua tests/run_all.lua                        # core unit tests, no Aseprite need
 "$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua   # runtime tests
 ```
 
+### Looking at the Interface
+
+Interface work is not verified until it has been seen in the running
+application, and that check does not need a person. `tools/uidriver.py` focuses
+the editor's window, sends keystrokes or clicks, and captures the window to an
+image file that can be inspected directly.
+
+```bash
+python3 tools/uidriver.py focus
+python3 tools/uidriver.py combo Alt_L f    # open the File menu
+python3 tools/uidriver.py key Down
+python3 tools/uidriver.py shot /tmp/check.png
+```
+
+Remember that the editor reads extensions only at startup, so restart it after
+copying a change in.
+
 ### Before Commit
 
 ```bash
