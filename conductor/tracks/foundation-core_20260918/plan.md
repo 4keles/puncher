@@ -100,12 +100,12 @@ plan update.
 
 ## Phase 3 — Motion Path Producer, Adapter and Demonstration
 
-- [~] Task: Motion path producer
-  - [ ] Write failing tests: frame count, displacement and curve produce the
+- [x] Task: Motion path producer `3691554`
+  - [x] Write failing tests: frame count, displacement and curve produce the
         expected integer offsets, the endpoints land exactly on the requested
         displacement, no drift accumulates, durations are returned alongside
-  - [ ] Implement the producer on top of the core modules
-  - [ ] Refactor and re-run
+  - [x] Implement the producer on top of the core modules
+  - [x] Refactor and re-run
 
 - [ ] Task: Aseprite adapter
   - [ ] Write a failing integration test, executed by the real binary, that
