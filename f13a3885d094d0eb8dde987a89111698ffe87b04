@@ -1,0 +1,21 @@
+Task: Seeded random source (Phase 2, Track foundation-core_20260918)
+
+Red phase was proved rather than assumed: the module was moved aside, the suite
+failed on the missing dependency, the module was restored and the suite passed.
+Eight new tests, forty-five in total.
+
+What the tests pin down:
+- The same seed reproduces the same sequence; two different seeds diverge.
+- Fractions stay inside the half-open unit range, bounded ranges stay inside
+  their bounds, and whole numbers are whole and inclusive of both ends.
+- Over five hundred draws from a four-value range, every value comes up, which
+  catches a generator whose low bits are stuck.
+- A seed of zero still produces movement. The algorithm's state would otherwise
+  stay at zero forever, and zero is a perfectly reasonable thing for a caller
+  to pass.
+- Reseeding restarts the sequence, which is what makes a preview repeatable
+  while the artist drags a slider.
+
+Design note:
+The generator is three shifts and three exclusive-ors - enough scatter for
+sparks and debris, cheap enough to run thousands of times per effect.
