@@ -1,0 +1,27 @@
+Task: Linter and formatter configuration (Phase 1, Track foundation-core_20260918)
+
+What was done:
+- Declared the application's injected globals as read-only for the linter, plus
+  the two entry-point names it looks up by name in our own code.
+- Set the line width and indentation to match the project's style guide.
+- Kept the table-call idiom by configuring the formatter not to add parentheses
+  around a single table argument.
+- Formatted the existing source and confirmed both tools report clean.
+
+Findings worth keeping:
+- The package manager installs command-line tools into a user-local directory
+  that is not on the default non-interactive path; the setup notes already say
+  to add it, and any automated run must do so explicitly.
+- The formatter insists on a space between a call and its table argument, and
+  the option that looks like it would suppress that does not. The formatter's
+  preference was accepted rather than worked around, and the ineffective option
+  was removed instead of being left in the configuration as dead weight.
+
+Files changed:
+- .luacheckrc, stylua.toml, main.lua (reformatted)
+
+Why:
+The quality gates in the process document name lint and format cleanliness as
+conditions for completing any task. Without configuration matching the
+application's runtime, the linter would have reported every API call as an
+error and the gate would have been ignored in practice.
