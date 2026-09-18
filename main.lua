@@ -9,18 +9,18 @@
 local MENU_GROUP = "puncher_menu"
 
 function init(plugin)
-  plugin:newMenuGroup{
+  plugin:newMenuGroup {
     id = MENU_GROUP,
     title = "Puncher",
     group = "file_scripts",
   }
 
-  plugin:newCommand{
+  plugin:newCommand {
     id = "puncher_about",
     title = "About Puncher",
     group = MENU_GROUP,
     onclick = function()
-      app.alert{
+      app.alert {
         title = "Puncher",
         text = {
           "Procedural action animation for pixel art characters.",

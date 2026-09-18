@@ -31,7 +31,7 @@ plan update.
         interface work)
   - [x] Record the installation steps in the process document
 
-- [ ] Task: Linter and formatter configuration
+- [~] Task: Linter and formatter configuration
   - [ ] Declare the Aseprite globals so the linter does not report them
   - [ ] Configure the formatter to the style stated in the Lua style guide
   - [ ] Both run clean on the whole tree
