@@ -1,0 +1,29 @@
+Task: Aseprite adapter and integration test (Phase 3)
+
+Red phase: the integration test was written first and failed on the missing
+module. Green phase: twenty-six checks pass inside the real application.
+
+The suite was then proved to be worth something. A deliberate defect was
+introduced - cels placed at the original position instead of the offset one -
+and the suite failed immediately, naming the frame, the expected value and the
+actual one, and the process exited non-zero. The defect was reverted and the
+suite went green again. Without that step, a passing integration test only
+proves the code ran.
+
+What the test pins down:
+- The sprite grows by exactly one frame per step.
+- The motion lands on a new layer; the original layer keeps its name and its
+  cel keeps its position, which is the non-destructive guarantee stated as a
+  quality gate.
+- Every produced cel sits at the offset the path asked for, measured from where
+  the original drawing was.
+- Durations survive the conversion between the milliseconds the core speaks and
+  the seconds the application stores.
+- A tag covers exactly the produced range, so the result can be played back.
+
+Findings worth keeping:
+- An error raised inside a batch script makes the application exit with a
+  non-zero status, which is what lets these tests mean something to a machine.
+- The first runner reported zero checks while passing, because each test file
+  loaded its own copy of the assertion helper. The runner now owns the one
+  instance and passes it in, so the reported count is the count that ran.
