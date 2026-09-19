@@ -15,6 +15,9 @@ package.path = table.concat({
 }, ";")
 
 local motion = require("core.motion")
+local parts = require("core.parts")
+local drawlist = require("core.drawlist")
+local rig = require("adapter.rig")
 local frames = require("adapter.frames")
 
 local OUTPUT_DIR = app.fs.joinPath(root, "build")
@@ -29,11 +32,21 @@ local preset = dofile(app.fs.joinPath(root, "presets", "demo_dash.lua"))
 local path = motion.linear(preset)
 
 local sourceCel = sprite.cels[1]
-local result = frames.applyMotion {
+local tree = parts.tree(rig.read(sprite, sourceCel))
+
+local instructions = drawlist.fromMotionPath {
+  tree = tree,
+  part = tree.roots[1],
+  layer = "Puncher Dash",
+  path = path,
+}
+drawlist.validate(instructions, tree)
+
+local result = frames.applyDrawList {
   sprite = sprite,
   cel = sourceCel,
-  path = path,
-  layerName = "Puncher Dash",
+  parts = tree.byName,
+  drawList = instructions,
   tagName = "dash",
 }
 

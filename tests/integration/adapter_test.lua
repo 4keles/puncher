@@ -1,28 +1,37 @@
--- Runs inside the application. Proves the adapter turns a motion path into
--- real frames without disturbing what the artist already drew.
+-- Runs inside the application. Proves the adapter turns a draw list into real
+-- frames without disturbing what the artist already drew.
 
 local here = app.fs.filePath(debug.getinfo(1, "S").source:gsub("^@", ""))
 local bootstrap = dofile(app.fs.joinPath(here, "support.lua"))
 bootstrap.addProjectToPath(bootstrap.projectRoot(debug.getinfo(1, "S").source))
 
 local frames = require("adapter.frames")
+local rig = require("adapter.rig")
+local parts = require("core.parts")
+local drawlist = require("core.drawlist")
 
 local M = {}
 
 local function newTestSprite()
-  local sprite = Sprite(16, 16)
-  local cel = sprite.cels[1]
-  local image = cel.image
+  local sprite = Sprite(32, 32)
+  local image = sprite.cels[1].image
 
   -- A recognizable blob, so a moved copy is obviously a copy.
-  for y = 4, 11 do
-    for x = 4, 11 do
+  for y = 4, 19 do
+    for x = 8, 15 do
       image:drawPixel(x, y, Color { r = 255, g = 80, b = 40, a = 255 })
     end
   end
 
   return sprite
 end
+
+local PATH = {
+  { x = 0, y = 0, duration = 100, held = true },
+  { x = 5, y = 0, duration = 60, held = false },
+  { x = 9, y = -2, duration = 60, held = false },
+  { x = 12, y = 0, duration = 120, held = true },
+}
 
 function M.run(support)
   local sprite = newTestSprite()
@@ -31,25 +40,27 @@ function M.run(support)
   local originalFrameCount = #sprite.frames
   local originalPosition = sourceCel.position
 
-  local path = {
-    { x = 0, y = 0, duration = 100, held = true },
-    { x = 5, y = 0, duration = 60, held = false },
-    { x = 9, y = -2, duration = 60, held = false },
-    { x = 12, y = 0, duration = 120, held = true },
+  local tree = parts.tree(rig.read(sprite))
+  local list = drawlist.fromMotionPath {
+    tree = tree,
+    part = "body",
+    layer = "Motion Test",
+    path = PATH,
   }
+  support.assertTrue(drawlist.validate(list, tree), "the produced list is one the adapter can draw")
 
-  local result = frames.applyMotion {
+  local result = frames.applyDrawList {
     sprite = sprite,
     cel = sourceCel,
-    path = path,
-    layerName = "Motion Test",
+    parts = tree.byName,
+    drawList = list,
     tagName = "motion-test",
   }
 
   support.assertNotNil(result, "the adapter returned nothing")
 
   -- The sprite grew by exactly one frame per step.
-  support.assertEquals(#sprite.frames, originalFrameCount + #path, "frame count")
+  support.assertEquals(#sprite.frames, originalFrameCount + #PATH, "frame count")
 
   -- A new layer carries the motion, and the original layer is untouched.
   support.assertEquals(#sprite.layers, 2, "layer count")
@@ -57,23 +68,29 @@ function M.run(support)
   support.assertEquals(sourceCel.position.x, originalPosition.x, "source cel moved horizontally")
   support.assertEquals(sourceCel.position.y, originalPosition.y, "source cel moved vertically")
 
-  -- Every produced cel sits at the offset the path asked for, measured against
-  -- where the original drawing was.
-  local motionLayer = result.layer
+  -- The drawing the parts were cut from must come back out unchanged.
+  local sourceDrawn = sourceCel.image:shrinkBounds()
+  support.assertEquals(sourceDrawn.width, 8, "the source drawing changed width")
+  support.assertEquals(sourceDrawn.height, 16, "the source drawing changed height")
+
+  -- Every produced cel sits where the path asked, measured against where the
+  -- original drawing was. This is the behaviour the engine had before draw
+  -- lists existed, and it has to survive the change unaltered.
+  local motionLayer = result.layers[1]
   support.assertEquals(motionLayer.name, "Motion Test", "layer name")
 
-  for index, step in ipairs(path) do
+  for index, step in ipairs(PATH) do
     local frameNumber = result.firstFrame + index - 1
     local cel = motionLayer:cel(frameNumber)
     support.assertNotNil(cel, "no cel produced for step " .. index)
     support.assertEquals(
       cel.position.x,
-      originalPosition.x + step.x,
+      originalPosition.x + sourceDrawn.x + step.x,
       "step " .. index .. " horizontal"
     )
     support.assertEquals(
       cel.position.y,
-      originalPosition.y + step.y,
+      originalPosition.y + sourceDrawn.y + step.y,
       "step " .. index .. " vertical"
     )
 
@@ -85,6 +102,21 @@ function M.run(support)
     )
   end
 
+  -- The pixels arrive unchanged: an unturned part is a copy, not a resample.
+  local firstCel = motionLayer:cel(result.firstFrame)
+  support.assertEquals(firstCel.image.width, sourceDrawn.width, "produced cel width")
+  support.assertEquals(firstCel.image.height, sourceDrawn.height, "produced cel height")
+  local differing = 0
+  for y = 0, sourceDrawn.height - 1 do
+    for x = 0, sourceDrawn.width - 1 do
+      local was = sourceCel.image:getPixel(sourceDrawn.x + x, sourceDrawn.y + y)
+      if firstCel.image:getPixel(x, y) ~= was then
+        differing = differing + 1
+      end
+    end
+  end
+  support.assertEquals(differing, 0, "an untouched part came through changed")
+
   -- A tag covers exactly the produced range, so the artist can play it back.
   local tag = nil
   for _, candidate in ipairs(sprite.tags) do
@@ -94,7 +126,7 @@ function M.run(support)
   end
   support.assertNotNil(tag, "no tag was created")
   support.assertEquals(tag.fromFrame.frameNumber, result.firstFrame, "tag start")
-  support.assertEquals(tag.toFrame.frameNumber, result.firstFrame + #path - 1, "tag end")
+  support.assertEquals(tag.toFrame.frameNumber, result.firstFrame + #PATH - 1, "tag end")
 
   -- The whole result must come back out in one step. Everything above was
   -- written inside a single transaction precisely so the artist never has to
