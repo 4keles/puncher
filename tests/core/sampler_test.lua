@@ -93,4 +93,79 @@ function TestSampler:testNegativeHoldIsRejected()
   })
 end
 
+-- Which frames are beats rather than steps. Nothing downstream reads this yet,
+-- and that is exactly why it needs checking: it is carried through the motion
+-- and into the draw list on the strength of being right here, and the motion
+-- work that follows will decide where a freeze goes by asking it. A field that
+-- nothing reads is a field that can quietly become wrong.
+
+function TestSampler:testTheHeldFramesAreTheOnesAtEitherEnd()
+  local frames = sampler.sample {
+    frameCount = 4,
+    curve = "linear",
+    holdFirst = 2,
+    holdLast = 3,
+  }
+
+  local marks = {}
+  for index, frame in ipairs(frames) do
+    marks[index] = frame.held and "h" or "-"
+  end
+  -- Two beats, then four steps, then three beats.
+  luaunit.assertEquals(table.concat(marks), "hh----hhh")
+end
+
+function TestSampler:testAMotionWithNoHoldsHasNoHeldFrames()
+  local frames = sampler.sample { frameCount = 5, curve = "linear" }
+  for index, frame in ipairs(frames) do
+    luaunit.assertFalse(frame.held, "frame " .. index .. " claims to be a held beat")
+  end
+end
+
+function TestSampler:testAHeldFrameIsTheOneThatLastsLonger()
+  -- The mark and the duration have to agree, or a later reader will trust one
+  -- and get the other. Every held frame lasts the multiplier longer, and no
+  -- moving frame does.
+  local base = 40
+  local multiplier = 3
+  local frames = sampler.sample {
+    frameCount = 3,
+    curve = "linear",
+    holdFirst = 1,
+    holdLast = 1,
+    baseDuration = base,
+    holdMultiplier = multiplier,
+  }
+
+  for index, frame in ipairs(frames) do
+    local expected = frame.held and (base * multiplier) or base
+    luaunit.assertAlmostEquals(
+      frame.duration,
+      expected,
+      EPSILON,
+      "frame " .. index .. " is marked " .. tostring(frame.held) .. " but lasts " .. frame.duration
+    )
+  end
+end
+
+function TestSampler:testAHeldFrameSitsAtOneEndOfTheTravelOrTheOther()
+  -- A beat is a pause, so nothing may have moved during it: the ones at the
+  -- start are still at the beginning and the ones at the end have arrived.
+  local frames = sampler.sample {
+    frameCount = 3,
+    curve = "quadOut",
+    holdFirst = 2,
+    holdLast = 2,
+  }
+  for index, frame in ipairs(frames) do
+    if frame.held then
+      local atAnEnd = math.abs(frame.progress) < EPSILON or math.abs(frame.progress - 1) < EPSILON
+      luaunit.assertTrue(
+        atAnEnd,
+        "held frame " .. index .. " is part way along at " .. frame.progress
+      )
+    end
+  end
+end
+
 return { TestSampler = TestSampler }
