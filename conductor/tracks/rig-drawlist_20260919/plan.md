@@ -186,3 +186,65 @@ Every step below is a single action with an observable result.
   - [x] Visual verification: the animation is watched in full
 
 ## Phase 5 complete [checkpoint: 8c3051d]
+
+## Closure — Review Findings
+
+The mandatory code review ran against the whole branch. The subagents raised
+for it both stopped before executing anything, so the review was carried out
+directly in the session that owns the track. Every finding below was verified
+by running it, not by reading alone, and every correction carries a test that
+fails without it.
+
+- [x] Correction: A part reaching past the drawing invented pixels, silently
+  - [x] Cause: the bulk read indexed the image's byte buffer without checking
+        the rectangle lay inside it. Indexing a string from before its start
+        counts backwards from its end in this language, so the read did not
+        fail - it returned real bytes from the far side of the picture and
+        assembled them into colours the drawing never held
+  - [x] Reachable from ordinary use: parts are marked in the sprite's
+        coordinates while a cel holds only the pixels drawn on, so a rectangle
+        with any margin around a limb starts outside the cel it is cut from
+  - [x] Why no test caught it: the bridge was only ever asked for the whole
+        image or a window strictly inside it. The same shape as the lean that
+        lost its rows - an input too small to reach the case
+  - [x] Answer nothing outside the image, which is the answer the matrix
+        already gives to the same question
+  - [x] Test it in every colour mode, on all four sides and across a corner
+
+- [x] Correction: The validator passed an instruction drawing on a layer the
+      list never declares
+  - [x] Cause: the layer was checked for being a name, not for being one of
+        the names the list declares. The adapter creates exactly the declared
+        layers and looks each instruction up among them, so such an
+        instruction draws nowhere
+  - [x] Not reachable from today's builders, which declare the one layer they
+        use; it is a gap in the refusal this module exists to make
+  - [x] Refuse it, and refuse a list that declares no layer at all
+
+- [x] Correction: The enlargement accepted factors that would not enlarge
+  - [x] Nought and a negative fell past the doubling loop and returned the
+        picture unchanged, so a caller asking for the impossible got a
+        plausible answer; a factor of one returned the caller's own picture
+        rather than a copy, which is a write reaching back into something it
+        does not own
+  - [x] Refuse anything below one or fractional; return a copy at one
+
+- [x] Correction: The default pivot was measured two different ways
+  - [x] The horizontal fraction was applied to the rectangle's width and the
+        vertical one to its height less one, in two files, for the same idea
+  - [x] Give it one owner in the part layer and have the slice reader use it.
+        Rounding to nearest reproduces both previous results exactly, so no
+        frame changes - confirmed against the reference renders
+
+- [x] Deferred: the turn's cost grows with the square of the part, unbounded
+  - [x] Measured on this machine: a 16x24 part turns in 0.04 s and 3 MB; 32x48
+        in 0.14 s and 10 MB; 64x96 in 0.57 s and 42 MB; 128x192 in 2.33 s and
+        166 MB. Per frame, per turning part
+  - [x] A twelve-frame animation with one 128x192 limb therefore locks the
+        editor for around half a minute with no way to cancel
+  - [x] Not corrected here: what the limit should be, and what happens when it
+        is passed, is a decision rather than a repair, and it belongs with the
+        track that bounds the other inputs. Recorded as a backlog row with
+        these numbers
+
+- [x] Task: Rerun every gate after the corrections
