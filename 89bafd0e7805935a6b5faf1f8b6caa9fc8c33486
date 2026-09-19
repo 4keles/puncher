@@ -1,0 +1,34 @@
+Phase 3: parts, the tree and forward kinematics
+
+The track's open risk is closed. Whether a slice keeps its pivot, its text and
+an extension's namespaced properties across a save is not stated anywhere in
+the documentation, and the whole rig design rested on it. Checked in the
+running application: all of it survives, including integer property values. A
+runtime test now saves, reopens and reads a rig back out, so this cannot
+regress quietly.
+
+The contract has two suppliers, and the second one is the compatibility story:
+a document with no slices yields a single part covering the drawing, which is
+what the engine was doing implicitly before parts existed. A third supplier
+working parts out from the silhouette can arrive later against the same shape.
+
+Forward kinematics is one rule: a parent's placement maps any rest point by
+turning it about the parent's own rest pivot and then moving that pivot where
+the parent ended up. Everything else - chains adding down the arm, an offset
+carrying a whole limb, a part turning about itself without moving - falls out
+of it and is pinned by tests that compute the expected answer by hand rather
+than by restating the implementation.
+
+Refusals are deliberate and name the part: a parent that is not in the rig,
+parts hanging from each other in a circle, a duplicated name, a pivot outside
+its own rectangle. The pivot check earned itself immediately by rejecting a
+fixture in these tests where a head pivoted one pixel below its own bottom
+edge.
+
+A pivot is measured from the top left of its own part, which is how the
+application states a slice's pivot. Two conventions for the same idea is how a
+limb ends up turning about somewhere off the canvas.
+
+Gates: 185 unit tests, 47 runtime checks including the save round trip, linter
+and formatter clean across 46 files, core layer clean, core coverage 100
+percent across 10 files.
