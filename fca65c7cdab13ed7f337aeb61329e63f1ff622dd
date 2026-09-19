@@ -1,0 +1,31 @@
+Phase 1: the pixel matrix and the transforms that survive the grid
+
+What it adds: a plain picture structure the core layer can reason about, and
+the three transforms that land exactly on the pixel grid - whole-pixel
+translation, mirroring about a vertical or horizontal line, and a lean built
+from whole-row displacements.
+
+Why it was needed: the core produced positions and nothing else. Everything
+about what was drawn lived on the far side of a boundary this layer may not
+cross, so none of it could be tested without the editor. The matrix is the
+agreement that moves that work back to where it can be.
+
+The rule that runs through all of it: no transform may invent a colour. It is
+enforced, not asserted - the tests apply a shared check that the colours
+coming out are a subset of the colours going in. A blended value is a colour
+the artist never chose and, on an indexed sprite, one that cannot be
+represented at all.
+
+Decisions worth keeping: coordinates start at zero to match the application's
+own images, since two conventions in one pipeline is how off-by-one happens;
+reading past the edge answers 'nothing drawn' rather than failing, because a
+transform sampling its source legitimately asks; writing past the edge is
+dropped rather than growing the picture; ties when rounding a displacement go
+the same way every run, so the same input always gives the same picture.
+
+The lean is deliberately not an affine shear. A real shear samples between
+pixels and blurs; this slides whole rows, so neighbouring rows share a
+displacement and the result is the staircase a pixel artist would draw.
+
+Gates: 121 unit tests pass, linter and formatter clean across 38 files, core
+layer clean, core coverage 100 percent across 9 files.
