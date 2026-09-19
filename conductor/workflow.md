@@ -257,10 +257,15 @@ image file that can be inspected directly.
 
 ```bash
 python3 tools/uidriver.py focus
-python3 tools/uidriver.py combo Alt_L f    # open the File menu
-python3 tools/uidriver.py key Down
-python3 tools/uidriver.py shot /tmp/check.png
+python3 tools/uidriver.py shot /tmp/check.png   # look first
+python3 tools/uidriver.py click-in 20 10        # then click what you saw
+python3 tools/uidriver.py key Escape
 ```
+
+Work from the captured image: take a shot, read the position of what you want
+straight off it, and click that same position. `tools/README.md` explains why
+positions taken from the window manager instead aim tens of pixels wide, and
+why that failure looks deceptively like input never arriving.
 
 Remember that the editor reads extensions only at startup, so restart it after
 copying a change in.

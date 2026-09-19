@@ -8,19 +8,32 @@ it. The project's rules say interface work is not verified until it has been
 seen in the running application; this is what makes that check something the
 machine can perform rather than a request handed to a person.
 
-It needs a window manager control utility and an image capture utility, both
-standard on a desktop system, and nothing else: the input side talks to the
-display server through libraries already present.
+It needs a window manager control utility, a window information utility and an
+image capture utility, all standard on a desktop system, and nothing else: the
+input side talks to the display server through libraries already present.
 
-**Its reach has a hard limit.** On a Wayland desktop the editor runs through
-the X compatibility layer, which only receives synthetic input while it truly
-holds the session's keyboard focus. When focus sits elsewhere, keystrokes go
-nowhere and pointer moves are ignored outright - a click then lands wherever
-the real pointer happens to rest, which is worse than doing nothing. So the
-driver is for looking at the interface when someone is already in front of it,
-not for unattended checks.
+**Work from a captured image.** Take a shot, read the position of what you want
+straight off that image, and click the same position with `click-in`. Screen
+positions are only needed for things outside the window.
 
-Unattended visual checks use `render_demo.lua` instead: it runs the same code
-the menu command runs, in batch mode with no window at all, and writes the
-result out as an animation and as numbered frames. Looking at those frames
-proves the motion without depending on a desktop session.
+That matters because of a mistake worth not repeating. The window manager
+reports where a window sits *inside its decorated frame*, not where that frame
+sits on screen. Treating the first as the second aimed every click tens of
+pixels away from what was meant - far enough to sail past a menu and land in
+the canvas. The symptom looks exactly like synthetic input not arriving at all,
+which is what it was mistaken for: this file previously claimed the display
+server ignored pointer moves outright and that unattended checks were therefore
+impossible. That was wrong. Pointer moves and keystrokes both arrive; the
+driver was simply aiming at the wrong place. Menus open, submenus expand,
+dialogs can be dismissed and the whole chain can be driven without a person
+present.
+
+One real limit remains: the editor only receives synthetic input while it holds
+the session's keyboard focus, so a check that runs while the desktop is busy
+with something else will still go nowhere.
+
+`render_demo.lua` stays the better tool for checking motion, and does not need
+a desktop session at all: it runs the same code the menu command runs, in batch
+mode with no window, and writes the result out as an animation and as numbered
+frames. Looking at those frames proves the motion; looking at the interface
+proves the interface.

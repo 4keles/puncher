@@ -12,10 +12,15 @@ because the editor runs as an X client under the compatibility layer.
 
 Usage:
     python3 tools/uidriver.py shot out.png
-    python3 tools/uidriver.py click 400 300
+    python3 tools/uidriver.py click-in 20 10     # a position read off that image
+    python3 tools/uidriver.py click 400 300      # a position on the screen
     python3 tools/uidriver.py key Escape
     python3 tools/uidriver.py combo Alt_L f
     python3 tools/uidriver.py geometry
+
+Work from a captured image: take a shot, read the position of what you want
+off it, and click that same position with `click-in`. Screen positions are
+only needed for things outside the window.
 """
 
 import ctypes
@@ -102,18 +107,46 @@ def click(x, y, button=1):
 
 
 def geometry(title=WINDOW_TITLE):
+    """Where the window's own contents start on screen, and how big they are.
+
+    The window manager's listing reports the position of the window inside its
+    decorated frame, not the position of that frame on screen. Adding a click
+    offset to those numbers therefore aims at a point that can be tens of
+    pixels away from what was meant - far enough to miss a menu entirely and
+    land in the canvas instead, which looks exactly like input not arriving at
+    all. The absolute corner is asked for separately, from the window itself.
+    """
     listing = subprocess.check_output(["wmctrl", "-lG"]).decode()
     for line in listing.splitlines():
         if title.lower() in line.lower():
             parts = line.split()
+            window_id = parts[0]
+            details = subprocess.check_output(["xwininfo", "-id", window_id]).decode()
+            corner = {}
+            for detail in details.splitlines():
+                for name, key in (("Absolute upper-left X", "x"), ("Absolute upper-left Y", "y")):
+                    if detail.strip().startswith(name):
+                        corner[key] = int(detail.split(":")[1])
             return {
-                "id": parts[0],
-                "x": int(parts[2]),
-                "y": int(parts[3]),
+                "id": window_id,
+                "x": corner["x"],
+                "y": corner["y"],
                 "width": int(parts[4]),
                 "height": int(parts[5]),
             }
     return None
+
+
+def at(x, y, title=WINDOW_TITLE):
+    """Turn a position inside the window into a position on screen.
+
+    Coordinates read off a captured window image are relative to that image.
+    This is what makes them clickable.
+    """
+    where = geometry(title)
+    if where is None:
+        raise RuntimeError("no window titled %r is open" % title)
+    return where["x"] + int(x), where["y"] + int(y)
 
 
 def focus(title=WINDOW_TITLE):
@@ -142,6 +175,8 @@ def main():
         print(shot(sys.argv[2]))
     elif command == "click":
         click(int(sys.argv[2]), int(sys.argv[3]))
+    elif command == "click-in":
+        click(*at(int(sys.argv[2]), int(sys.argv[3])))
     elif command == "key":
         key(sys.argv[2])
     elif command == "combo":
