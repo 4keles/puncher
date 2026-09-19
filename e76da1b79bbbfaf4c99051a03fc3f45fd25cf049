@@ -28,3 +28,34 @@ on screen. That is why an earlier session concluded synthetic input does not
 arrive here and wrote that into the tool documentation as fact. Both the code
 and the documentation are corrected, and the corrected driver was used to open
 the menu and submenu from coordinates read off a captured image.
+
+Phase 4 verification report - Continuous Integration and Closure
+
+Scope: everything between the phase 3 checkpoint 89757b9 and this commit.
+
+Gates, all run on this machine at the phase gate:
+  core tests           lua tests/run_all.lua                                      78 tests, 0 failures
+  runtime tests        "$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua   29 checks, 0 failures
+  lint                 luacheck .                                                 0 warnings, 0 errors, 30 files
+  format               stylua --check .                                           no file needs reformatting
+  layer boundary       lua tools/check_boundary.lua                               core clean
+  coverage             lua tools/check_coverage.lua                               100 percent across 6 files, target 80
+
+The same five checks also run on every push to the remote and were confirmed
+green there, reporting the same numbers.
+
+Test coverage for what changed in this phase: the two modules carrying logic
+gained unit tests of their own. The two command-line wrappers did not, on
+purpose - they read a file, call a tested module and set an exit code, and both
+were exercised for real instead: the boundary command runs in every gate, and
+the coverage command was run three times, once passing at the target, once
+failing above it, and once failing with no report present. The interface driver
+is exempt as interface code and was verified by looking at what it produced.
+
+Visual verification: the demonstration was run from the menu inside the running
+application on the bundled sample character, and every frame of the rendered
+animation was looked at in order. One press of undo removed the entire result,
+confirmed by the application's own status line.
+
+Operator approval: standing approval granted for this track through the end of
+the phase, so the gate did not block on a fresh confirmation.
