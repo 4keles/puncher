@@ -9,34 +9,34 @@ Every step below is a single action with an observable result.
 
 ## Phase 1 — The Pixel Matrix and the Transforms That Are Safe
 
-- [ ] Task: Pixel matrix
-  - [ ] Write failing tests: a new matrix is uniformly the transparent value;
+- [x] Task: Pixel matrix `fca65c7`
+  - [x] Write failing tests: a new matrix is uniformly the transparent value;
         reading outside the bounds returns the transparent value rather than
         failing; writing outside the bounds is ignored rather than growing the
         matrix; blitting one matrix into another lands at the offset asked
         for; shrinking to content returns the smallest rectangle holding a
         non-transparent pixel, and returns nothing for an empty matrix
-  - [ ] Implement the matrix
-  - [ ] Refactor and re-run
+  - [x] Implement the matrix
+  - [x] Refactor and re-run
 
-- [ ] Task: Translation and mirroring
-  - [ ] Write failing tests: translating by whole numbers moves every pixel
+- [x] Task: Translation and mirroring `fca65c7`
+  - [x] Write failing tests: translating by whole numbers moves every pixel
         and invents none; mirroring twice returns the original exactly;
         mirroring preserves the set of colours used
-  - [ ] Implement both
-  - [ ] Refactor and re-run
+  - [x] Implement both
+  - [x] Refactor and re-run
 
-- [ ] Task: Shear as integer row offsets
-  - [ ] Write failing tests: each row is displaced by a whole number of
+- [x] Task: Shear as integer row offsets `fca65c7`
+  - [x] Write failing tests: each row is displaced by a whole number of
         pixels; no row is resampled, so the set of colours is unchanged; a
         shear of zero is the identity
-  - [ ] Implement the shear
-  - [ ] Refactor and re-run
+  - [x] Implement the shear
+  - [x] Refactor and re-run
 
-- [ ] Task: Colour conservation as a shared property test
-  - [ ] Write a check, used by every transform's tests, that the output's set
+- [x] Task: Colour conservation as a shared property test `fca65c7`
+  - [x] Write a check, used by every transform's tests, that the output's set
         of colours is a subset of the input's
-  - [ ] Apply it to every transform written so far
+  - [x] Apply it to every transform written so far
 
 - [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
 
