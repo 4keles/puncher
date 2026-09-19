@@ -69,6 +69,11 @@ function M.read(sprite, cel)
     local properties = slice.properties(M.PLUGIN_KEY)
     list[#list + 1] = {
       name = slice.name,
+      -- What the part is, as opposed to what it is called. Nothing reads it
+      -- yet. It is what will let a preset say "swing the arm" on a character
+      -- whose parts are named in another language or another convention,
+      -- rather than matching on the name and quietly doing nothing. Falling
+      -- back to the name means a rig that never sets it still works.
       role = properties.role or slice.name,
       parent = properties.parent,
       rect = {

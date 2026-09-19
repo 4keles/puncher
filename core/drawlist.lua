@@ -49,6 +49,12 @@ function M.fromPoses(options)
 
     frames[index] = {
       duration = frame.duration,
+      -- Whether this frame is a held beat. Nothing reads it yet: the hold is
+      -- already in the duration, and this says why the duration is what it
+      -- is. It is carried because the motion work that follows needs to know
+      -- which frames are beats rather than steps - a held frame is where a
+      -- freeze goes, and where an imageless cel could stand in for a repeat.
+      -- Recorded here so nobody reading this later assumes it is wired up.
       held = frame.held or false,
       draws = draws,
     }
