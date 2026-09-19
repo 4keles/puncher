@@ -5,17 +5,9 @@
 -- almost every case in an action animation: a bent path between two points,
 -- and the rise and fall of something thrown.
 
-local M = {}
+local unit = require("core.unit")
 
-local function clamp(t)
-  if t < 0 then
-    return 0
-  end
-  if t > 1 then
-    return 1
-  end
-  return t
-end
+local M = {}
 
 --- A point along a quadratic curve.
 -- The control point is not passed through; it pulls the path towards itself,
@@ -27,7 +19,7 @@ end
 -- @param t number  normalized time, clamped to [0, 1]
 -- @return table  { x = number, y = number }
 function M.quadratic(start, control, finish, t)
-  t = clamp(t)
+  t = unit.clamp(t)
   local inverse = 1 - t
   local a = inverse * inverse
   local b = 2 * inverse * t
@@ -47,7 +39,7 @@ end
 -- @param t number  normalized time, clamped to [0, 1]
 -- @return number
 function M.parabola(height, t)
-  t = clamp(t)
+  t = unit.clamp(t)
   return 4 * height * t * (1 - t)
 end
 

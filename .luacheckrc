@@ -14,39 +14,10 @@ globals = {
   "exit",
 }
 
-read_globals = {
-  "app",
-  "json",
-  "Brush",
-  "Cel",
-  "Color",
-  "ColorMode",
-  "ColorSpace",
-  "Dialog",
-  "Frame",
-  "GraphicsContext",
-  "Image",
-  "ImageSpec",
-  "Layer",
-  "MouseButton",
-  "Palette",
-  "Plugin",
-  "Point",
-  "Range",
-  "Rectangle",
-  "Selection",
-  "Site",
-  "Size",
-  "Slice",
-  "Sprite",
-  "Tag",
-  "Tileset",
-  "Tilemap",
-  "Timer",
-  "Version",
-  "WebSocket",
-  "BlendMode",
-}
+-- The application's own globals. One list, two consumers: this file and the
+-- layer boundary check. See the comment at the top of that file for why it is
+-- not written out twice.
+read_globals = dofile("tools/aseprite_globals.lua")
 
 exclude_files = {
   ".luarocks/**",

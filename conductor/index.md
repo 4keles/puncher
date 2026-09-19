@@ -16,6 +16,10 @@
 -   [Tracks Registry](./tracks.md)
 -   [Tracks Directory](./tracks/)
 
+## Backlog
+
+-   [Deferred findings](./backlog.md)
+
 ## Research
 
 -   [Aseprite Lua API: Capabilities and Limits](./research/01-aseprite-lua-api.md)

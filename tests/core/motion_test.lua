@@ -83,4 +83,45 @@ function TestMotion:testAMissingDistanceIsRejected()
   luaunit.assertErrorMsgContains("distance", motion.linear, { frameCount = 5 })
 end
 
+function TestMotion:testHeldFramesInAJumpStayOnTheGround()
+  local path = motion.jump {
+    frameCount = 3,
+    distance = 24,
+    height = 16,
+    holdFirst = 2,
+    holdLast = 2,
+  }
+
+  -- A held frame means nothing moves. The ones at the start are still waiting
+  -- to jump and the ones at the end have already landed, so both sit at rest.
+  for index, step in ipairs(path) do
+    if step.held then
+      luaunit.assertEquals(step.y, 0, "held frame " .. index .. " is off the ground")
+    end
+  end
+end
+
+function TestMotion:testHeldFramesAtTheEndOfAJumpHaveArrived()
+  local path = motion.jump {
+    frameCount = 3,
+    distance = 24,
+    height = 16,
+    holdFirst = 1,
+    holdLast = 2,
+  }
+
+  luaunit.assertEquals(path[1].x, 0)
+  luaunit.assertEquals(path[#path].x, 24)
+  luaunit.assertEquals(path[#path].y, 0)
+end
+
+function TestMotion:testEveryStepCarriesTheProgressItWasBuiltFrom()
+  local path = motion.linear { frameCount = 5, distance = 10 }
+  luaunit.assertEquals(path[1].progress, 0)
+  luaunit.assertEquals(path[#path].progress, 1)
+  for index = 2, #path do
+    luaunit.assertTrue(path[index].progress >= path[index - 1].progress)
+  end
+end
+
 return { TestMotion = TestMotion }

@@ -72,6 +72,11 @@ function M.linear(options)
       y = (axis == "y") and offsets[index] or 0,
       duration = frame.duration,
       held = frame.held,
+      -- How far along its curve this frame sits. Carried out with the step
+      -- because anything layered on top of a path - a height, a rotation, a
+      -- scale - needs the same number, and re-deriving it from the frame's
+      -- position in the list is wrong the moment hold frames exist.
+      progress = frame.progress,
     }
   end
 
@@ -80,7 +85,10 @@ end
 
 --- A move that travels forward while rising and falling.
 -- Height is subtracted rather than added: on a canvas, up is the smaller
--- vertical coordinate.
+-- vertical coordinate. The height of each frame follows the progress the
+-- sampler gave it, not the frame's position in the list: a held frame repeats
+-- an extreme, so it must stay at that extreme's height rather than being
+-- lifted part way up the arc.
 -- @param options table  as for a straight move, plus height
 function M.jump(options)
   requireNumber(options.distance, "distance")
@@ -96,10 +104,8 @@ function M.jump(options)
     holdMultiplier = options.holdMultiplier,
   }
 
-  local lastIndex = #path
-  for index, step in ipairs(path) do
-    local progress = (lastIndex > 1) and ((index - 1) / (lastIndex - 1)) or 0
-    step.y = -math.floor(arc.parabola(options.height, progress) + 0.5)
+  for _, step in ipairs(path) do
+    step.y = -math.floor(arc.parabola(options.height, step.progress) + 0.5)
   end
 
   return path
