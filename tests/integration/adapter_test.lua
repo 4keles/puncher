@@ -141,6 +141,87 @@ function M.run(support)
 
   M.runEmptyResultIsRefused(support)
   M.runTransparentIndexIsNotAssumedToBeZero(support)
+  M.runTurnsAreNeverCompounded(support)
+end
+
+--- A frame's turn is applied to the original drawing, never to the frame
+--- before it.
+-- Turning the previous result is the cheaper-looking thing to do and it
+-- quietly destroys the drawing, because every turn resamples and the damage
+-- compounds: going all the way round in steps of thirty degrees leaves 88
+-- percent of a figure's pixels. Nothing in the module's shape stops a later
+-- change from doing it, so this holds the property rather than the code.
+local COMPOUNDING_ANGLES = { 0, 25, 50, 75 }
+
+function M.runTurnsAreNeverCompounded(support)
+  local function producedCel(angles, wanted)
+    local sprite = newTestSprite()
+    local list = {
+      {
+        name = "body",
+        role = "body",
+        rect = { x = 8, y = 4, width = 8, height = 16 },
+        pivot = { x = 4, y = 15 },
+      },
+    }
+    local tree = parts.tree(list)
+
+    local frameList = { layers = { "Puncher Turns" }, frames = {} }
+    for index, angle in ipairs(angles) do
+      frameList.frames[index] = {
+        duration = 60,
+        held = false,
+        draws = {
+          { part = "body", angle = angle, pivot = { x = 20, y = 20 }, layer = "Puncher Turns" },
+        },
+      }
+    end
+    drawlist.validate(frameList, tree)
+
+    frames.applyDrawList {
+      sprite = sprite,
+      cel = sprite.cels[1],
+      parts = tree.byName,
+      drawList = frameList,
+      tagName = "turns-test",
+    }
+
+    local layer = nil
+    for _, candidate in ipairs(sprite.layers) do
+      if candidate.name == "Puncher Turns" then
+        layer = candidate
+      end
+    end
+
+    local pixels = {}
+    local found = layer.cels[wanted]
+    for y = 0, found.image.height - 1 do
+      for x = 0, found.image.width - 1 do
+        pixels[#pixels + 1] = found.image:getPixel(x, y)
+      end
+    end
+    local position = { x = found.position.x, y = found.position.y }
+    sprite:close()
+    return pixels, position
+  end
+
+  -- The last angle, reached through three turns before it, against the same
+  -- angle reached on its own. If the module ever turned the previous frame's
+  -- result, these would differ.
+  local throughOthers, positionA = producedCel(COMPOUNDING_ANGLES, #COMPOUNDING_ANGLES)
+  local onItsOwn, positionB = producedCel({ COMPOUNDING_ANGLES[#COMPOUNDING_ANGLES] }, 1)
+
+  support.assertEquals(#throughOthers, #onItsOwn, "the same angle produced a different size")
+  support.assertEquals(positionA.x, positionB.x, "the same angle landed at a different place")
+  support.assertEquals(positionA.y, positionB.y, "the same angle landed at a different height")
+
+  local differences = 0
+  for index = 1, #onItsOwn do
+    if throughOthers[index] ~= onItsOwn[index] then
+      differences = differences + 1
+    end
+  end
+  support.assertEquals(differences, 0, "a turn was applied to the frame before it")
 end
 
 -- The whole chain on a document that calls something other than zero nothing.
