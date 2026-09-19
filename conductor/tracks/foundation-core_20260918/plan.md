@@ -181,18 +181,18 @@ result cannot be seen is not a step.
         on a throwaway branch, confirm the run turns red and stops at the
         broken step, then remove the branch
 
-- [ ] Task: Machine-specific value sweep
-  - [ ] Search every tracked file for absolute paths belonging to this machine,
+- [x] Task: Machine-specific value sweep `7ac37a4`
+  - [x] Search every tracked file for absolute paths belonging to this machine,
         for the account name, and for the location the drawing application was
         built in
-  - [ ] Remove anything found, replacing it with a documented environment
+  - [x] Remove anything found, replacing it with a documented environment
         variable or a path relative to the repository
-  - [ ] Confirm the process document states how to point the environment
+  - [x] Confirm the process document states how to point the environment
         variable at the drawing application's binary, and that every command in
         the document uses it rather than a fixed location
-  - [ ] Re-run the test suites after the sweep, because a path change can break
+  - [x] Re-run the test suites after the sweep, because a path change can break
         a runner silently
-  - [ ] Commit the sweep result, then attach the task summary as a git note
+  - [x] Commit the sweep result, then attach the task summary as a git note
 
 - [ ] Task: Closing condition demonstration
   - [ ] Prove the first clause: from a clean copy of the repository taken out
