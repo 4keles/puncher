@@ -287,3 +287,55 @@ left. What follows was found by executing, not by reading.
         The limit is now stated where the decision lives instead of the
         decision reading as settled in a respect it was never measured in
   - [x] `tools/measure_detail.lua` reproduces it without an editor
+
+- [x] Correction: A limb turned about the corner beside its joint
+  - [x] A source pixel becomes a block when the picture is made eight times
+        finer, and the point that pixel stood for is the middle of that block.
+        The turn handed over the block's top-left corner, so a limb rotated
+        about somewhere just off its declared joint
+  - [x] Because the miss is a fixed offset, the displacement it causes is that
+        offset with the turn subtracted from it: nothing at no turn and at the
+        quarter turns, largest in between. Measured at seventy degrees, the
+        joint sat four fifths of a pixel from where the geometry puts it, and
+        the error grew smoothly with the angle - over a swing, a shoulder
+        loosening as the arm comes round
+  - [x] Mapping the joint to the middle of its block leaves at most a quarter
+        of a pixel, with no trend against angle
+  - [x] Two checks hold it: the joint's landing place against an expectation
+        derived from the geometry rather than from the reported offsets, and
+        the offsets held to whole pixels
+  - [x] The swing's reference frames moved with it. Rendered before and after,
+        looked at side by side, and re-recorded in the same commit. The dash
+        is untouched because it never turns anything
+
+- [x] Correction: Nothing held the rule that turns are not compounded
+  - [x] Each frame turns the part as originally cut, by that frame's own
+        angle. Turning the previous result would compound the resampling:
+        measured, four quarter turns come back exact, eight steps of
+        forty-five leave 96 percent of a figure's pixels and twelve steps of
+        thirty leave 88
+  - [x] Nothing in the module's shape said so. The check compares a late angle
+        reached through a run against the same angle reached alone, and making
+        the cut carry the previous turn forward fails it
+
+- [x] Task: Count the pieces a drawing is in
+  - [x] The pixel comparison says the same word for a frame that differs by
+        one pixel and a frame where an arm has come off, and a deliberate
+        re-recording silences it entirely
+  - [x] Both samples are drawn as pieces that touch, so a correct frame is one
+        piece, and the reference check now says so
+  - [x] Written because the eye keeps getting this wrong here, always in the
+        same direction: three times now a turn was believed to be tearing the
+        figure apart and the count said it was whole
+  - [x] Pure geometry over a pixel matrix, so it lives in the core with its
+        own checks and the tool asks the core rather than keeping a copy
+
+- [x] Task: Mutation testing of the suite
+  - [x] Sixteen deliberate breaks, one at a time, to find out what the suite
+        actually holds rather than what its count suggests. Fifteen were
+        caught
+  - [x] The survivor was the sign of the sideways term in the kinematics,
+        because every placement check in the suite had the child directly
+        above or below its parent, where that sign cannot matter. Two cases
+        for a part off to the side close it
+
