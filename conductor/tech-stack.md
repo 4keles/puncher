@@ -48,8 +48,8 @@ v1.2.30) — all three together are only guaranteed from v1.3-rc7 onward.
 
 Headless operation (`--batch --script`) has been verified: it runs without a
 display → an integration test strategy is viable. The following API
-capabilities were tested live and work: `Image:resize{method='rotsprite'}`,
-global `json`, `Image.bytes`.
+capabilities were tested live and work: `Image:resize{method='rotsprite'}`
+(a scaling method, not a rotation), global `json`, `Image.bytes`.
 
 Between v1.3.15.3 and v1.3.18.5, the scripting API went from v36 to v41.
 Behavior changes that concern us: `properties` changes made outside a
@@ -67,7 +67,7 @@ freeze/hitstop frames.
 | Pixel read/write (simple) | `image:pixels()`, `Image:getPixel` | Only for small regions. |
 | Pixel write | `Image:drawPixel` | `putPixel` **will not be used** — deprecated and generates an undo record on every call. |
 | Composition | `Image:drawImage(img, pos, opacity, blendMode)` | Combining VFX layers. |
-| Pixel-art-safe scaling/rotation | `Image:resize{ method='rotsprite' }` | RotSprite is natively available — no need for our own implementation. |
+| Pixel-art-safe scaling | `Image:resize{ method='rotsprite' }` | The RotSprite *scaling* method is available. It is not a rotation: see the rotation row below. |
 | Built-in commands | `app.command.X{...}` | `Rotate`, `SpriteSize`, `CanvasSize`, etc. |
 | Non-destructive operation | `app.transaction(fn, "label")` | Each command is a single transaction; `error()` inside it → automatic rollback. |
 | Interface | `Dialog` + `canvas` widget | `onpaint(ev)` → `ev.context` (GraphicsContext); `onmousemove`, `dlg:repaint()`. For live preview. |
@@ -106,10 +106,81 @@ target.
 | Color quantization | Wu / median-cut + k-means refinement (libimagequant model), on `Image.bytes` | Gerstner et al. joint superpixel+palette optimization (NPAR 2012) — highest quality but iterative and on the order of seconds → **v2** |
 | Color distance | **OKLab** Euclidean distance | RGB (perceptually incorrect), CIELAB (hue shift in the blue region) |
 | Dithering | **Bayer (ordered)** 4x4/8x8, default **off** | Floyd-Steinberg — "shifting" noise between frames creates flicker in animation |
-| Rotation/scaling | Native `rotsprite` + pixel-grid snapping + sub-pixel accumulator | Naive nearest/bilinear rotation (jaggy, blurry) |
+| Rotation | Pure Lua over a pixel matrix: exact for quarter turns, otherwise enlarge eightfold with an edge-aware filter, turn there, vote back down | Relying on the application to rotate (it cannot, from a script); turning on the native grid; snapping to exact angles only; enlarging sixteenfold. See the measurement below. |
 | Deformation | Part-based affine (head/torso/arm/leg cut from the sheet + pivot) | Full mesh warping / ARAP — unnecessary complexity |
 | Pixelization (AI) | None | GAN/diffusion pixelization — palette and grid inconsistency between frames, GPU dependency → **v2 option** |
 | Screen shake / hitstop | Exported as JSON metadata | Real screen shake is not possible within the Aseprite canvas |
+
+### The rotation route, decided by measurement (2026-09-19)
+
+Four candidates were rendered on the same subjects at the same angles and
+scored against a much finer turn standing in for the truth. Subjects were the
+two sizes that matter: a limb of five by twelve pixels, and a whole figure of
+sixteen by twenty-four. Angles were ten, twenty, thirty, forty-five, sixty and
+seventy-five degrees.
+
+| Route | Worst agreement, limb | Worst agreement, figure | Cost per turn, figure |
+| --- | --- | --- | --- |
+| Turn on the native grid | 93.9% | 94.3% | 0.2 ms |
+| **Enlarge eightfold, turn, reduce** | **97.9%** | **98.6%** | **37 ms** |
+| Enlarge sixteenfold, turn, reduce | 100% | 99.3% | 149 ms |
+| Snap to the nearest quarter turn | 20.3% | 35.6% | 0.1 ms |
+
+Chosen: eightfold, with quarter turns going through the exact path instead
+since they are free and lose nothing.
+
+Why not the others. Turning on the native grid loses about one pixel in
+twenty, which is not an abstraction - it is the chewed outline visible in the
+comparison sheet at exactly the small angles a limb needs. Sixteenfold buys
+under a percentage point on a figure for four times the cost. Snapping does
+not rotate at all: a limb stays upright until the angle passes forty-five
+degrees and then falls flat, which the score reflects honestly.
+
+Two earlier attempts to measure the damage are recorded because they failed
+and the failures are instructive. Counting holes surrounded on four sides
+found none under any route. Counting how many separate pieces the drawing
+broke into also found none - every route leaves it in one piece. The visible
+damage is edge quality, not topology, and only a comparison against a finer
+turn captured it. The impression that a bad turn "breaks the legs off" was
+wrong, and the numbers said so.
+
+Reproduce with `"$ASEPRITE_BIN" --batch --script tools/compare_rotation.lua`.
+
+#### What that measurement could not see (2026-09-20)
+
+The agreement score above is computed against a thirty-two-fold detour, which
+is the same enlarge, turn and vote pipeline as the candidate it is judging,
+only finer. That makes it a fair measure of angular precision - a finer grid
+really does resolve an angle better - and an unfair one for the reduction
+rule, because the standard shares the candidate's rule. It is also blind to
+detail by construction: agreement counts every pixel alike, and the pixels
+that carry a face are three out of two hundred.
+
+Measured again with a standard that shares nothing with any candidate. A turn
+preserves area, so the count of each colour should survive it. On a figure
+with detail drawn into it, averaged over the same six angles:
+
+| Route | Large regions | A line one pixel wide | Single pixels |
+| --- | --- | --- | --- |
+| Turn on the native grid | 99-103% | 109% | 67% and 83% |
+| Enlarge eightfold, turn, vote | 99-103% | 94% | 42% and 33% |
+| Enlarge eightfold, turn, sample the centre | 99-101% | 85% | 58% and 50% |
+| Enlarge sixteenfold, turn, vote | 99-103% | 94% | 42% and 33% |
+
+So the chosen route is the best of these at edges and at thin limbs, and the
+worst at single pixels: it loses around three fifths of them. Sixteenfold
+recovers none of that, which places the cause in the vote rather than in the
+grid - a block the body merely outnumbers goes to the body, and an eye is
+always outnumbered.
+
+The route is not being changed, because no candidate measured here is better
+overall and sampling the centre trades a worse thin limb for a still-poor eye.
+What this is instead is a stated limit: a detail one pixel across is not
+reliably carried through a turn by any route measured so far. Recorded as a
+backlog row, because the fix is a reduction that knows a small feature from
+noise, which is a piece of research rather than a repair.
+
+Reproduce with `lua tools/measure_detail.lua`, which needs no editor.
 
 ## Test and Quality Infrastructure
 

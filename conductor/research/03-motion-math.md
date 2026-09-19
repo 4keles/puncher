@@ -107,11 +107,36 @@ and assign new pixels according to neighborhood rules.
 Three rules required for the engine:
 
 1. At small angles (<15°), a RotSprite-style upscale → rotate → downscale.
-   *(This is native in Aseprite: `Image:resize{method='rotsprite'}`.)*
+   *(Correction, 2026-09-19: this was recorded as being native. It is not.
+   See the note at the end of this section.)*
 2. **Pixel-grid snapping** after every frame is generated (round the
    position to a whole pixel).
 3. **Sub-pixel accumulator:** carry the rounding remainder to the next
    frame, otherwise round-off error accumulates.
+
+### Correction, 2026-09-19: the application cannot rotate from a script
+
+Checked against the application's own source before track 2 was planned,
+because the whole part-based deformation approach rests on it.
+
+| What exists | What it does | Usable for a limb |
+| --- | --- | --- |
+| `Image:resize{ method='rotsprite' }` | Scaling. The RotSprite name refers to the filter used while resampling, not to rotation. | No |
+| `app.command.Rotate{ angle = ... }` | Quarter turns only - the command handles 90, -90 and 180 and nothing else. Acts on the whole sprite or on the selection, and changes the sprite's dimensions. | No |
+| `doc::algorithm::rotate_image(..., double angle)` | Arbitrary angle, and it is what the interactive transform tool uses. Lives in the application's C++ and is not exposed to scripts. | Not reachable |
+
+So arbitrary-angle rotation has to be written in the core layer, over a plain
+pixel matrix read out of and written back into a cel in bulk. That is not a
+setback: it puts rotation where it can be unit tested without the application
+running at all, and it means the algorithm is ours to choose rather than
+inherited.
+
+Research 07 carries the algorithm: an edge-aware doubling filter applied
+repeatedly to enlarge, a nearest-neighbour rotation by inverse mapping at the
+enlarged size, then a reduction that picks rather than blends so no colour is
+invented. It also carries the reason the enlargement factor matters more here
+than in the sources: the published default was tuned on sprites several times
+larger than a limb at this scale.
 
 ## 8. References
 
@@ -147,7 +172,8 @@ Parameters taken by each preset function:
    parabolic arc: `y = -4h·t·(1-t)`.
 4. Stretch on the middle frames where speed is highest:
    `s_x = 1 + weight·0.3·|v_i|`, `s_y = 1/s_x`; aligned to the motion axis,
-   with pixel integrity preserved via affine transform + `rotsprite`.
+   with pixel integrity preserved via an affine transform and a rotation
+   implemented in the core layer.
 5. In presets like punch, set the hitbox flag on `active` frames; at the
    moment of the hit, freeze the motion for
    `hitstopFrames = round(3 + 5·weight)` (position fixed, increase squash).

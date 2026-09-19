@@ -2,10 +2,15 @@
 --
 --     "$ASEPRITE_BIN" --batch --script tools/render_demo.lua
 --
--- Runs the same path the menu command runs, then writes the result out as an
--- animation and as a single sheet with every frame side by side. Looking at
--- that sheet is how the motion gets checked without depending on a desktop
+-- Runs the same path the menu command runs, on both bundled samples, and
+-- writes each result out as an animation and as numbered frames. Looking at
+-- those frames is how the motion gets checked without depending on a desktop
 -- session holding keyboard focus.
+--
+-- Both samples go through one code path on purpose. The character with its
+-- parts marked gets an arm thrown out ahead of it; the one with nothing marked
+-- gets the plain dash it always got. Nothing chooses between them except what
+-- the document itself declares.
 
 local root = app.fs.filePath(app.fs.filePath(debug.getinfo(1, "S").source:gsub("^@", "")))
 package.path = table.concat({
@@ -15,45 +20,72 @@ package.path = table.concat({
 }, ";")
 
 local motion = require("core.motion")
+local parts = require("core.parts")
+local drawlist = require("core.drawlist")
+local rig = require("adapter.rig")
 local frames = require("adapter.frames")
 
 local OUTPUT_DIR = app.fs.joinPath(root, "build")
-local SAMPLE = app.fs.joinPath(root, "assets", "sample-character.aseprite")
 
-local sprite = app.open(SAMPLE)
-if not sprite then
-  error("could not open the sample character at " .. SAMPLE)
-end
+local SAMPLES = {
+  { name = "demo-dash", file = "sample-character.aseprite" },
+  { name = "demo-swing", file = "sample-rigged.aseprite" },
+}
 
 local preset = dofile(app.fs.joinPath(root, "presets", "demo_dash.lua"))
 local path = motion.linear(preset)
-
-local sourceCel = sprite.cels[1]
-local result = frames.applyMotion {
-  sprite = sprite,
-  cel = sourceCel,
-  path = path,
-  layerName = "Puncher Dash",
-  tagName = "dash",
-}
-
--- The sample canvas already has room for the dash. Widen it only if a preset
--- asks for more travel than fits, so the motion is never judged from frames
--- where the character has simply left the picture. What matters is where the
--- drawing ends, not where its cel ends: a cel covering the whole canvas would
--- otherwise make every dash look as if it overflowed.
-local drawn = sourceCel.image:shrinkBounds()
-local needed = sourceCel.position.x + drawn.x + drawn.width + math.abs(preset.distance)
-if needed > sprite.width then
-  sprite:crop(0, 0, needed, sprite.height)
-end
 
 if not app.fs.isDirectory(OUTPUT_DIR) then
   app.fs.makeDirectory(OUTPUT_DIR)
 end
 
-sprite:saveCopyAs(app.fs.joinPath(OUTPUT_DIR, "demo-dash.gif"))
-sprite:saveCopyAs(app.fs.joinPath(OUTPUT_DIR, "demo-dash-sheet.png"))
+for _, sample in ipairs(SAMPLES) do
+  local file = app.fs.joinPath(root, "assets", sample.file)
+  local sprite = app.open(file)
+  if not sprite then
+    error("could not open " .. file)
+  end
 
-print(("produced %d frames, tagged '%s'"):format(result.lastFrame - result.firstFrame + 1, "dash"))
-print("wrote " .. app.fs.joinPath(OUTPUT_DIR, "demo-dash.gif"))
+  local sourceCel = sprite.cels[1]
+  local list, source = rig.read(sprite, sourceCel)
+  local tree = parts.tree(list)
+
+  local instructions = drawlist.fromMotionPath {
+    tree = tree,
+    part = tree.roots[1],
+    layer = "Puncher Dash",
+    swing = preset.swing,
+    path = path,
+  }
+  drawlist.validate(instructions, tree)
+
+  local result = frames.applyDrawList {
+    sprite = sprite,
+    cel = sourceCel,
+    parts = tree.byName,
+    drawList = instructions,
+    tagName = "dash",
+  }
+
+  -- Widen only if the motion would genuinely run off, measuring where the
+  -- drawing ends rather than where its cel ends: a cel covering the whole
+  -- canvas would otherwise make every dash look as if it overflowed.
+  local drawn = sourceCel.image:shrinkBounds()
+  local needed = sourceCel.position.x + drawn.x + drawn.width + math.abs(preset.distance)
+  if needed > sprite.width then
+    sprite:crop(0, 0, needed, sprite.height)
+  end
+
+  sprite:saveCopyAs(app.fs.joinPath(OUTPUT_DIR, sample.name .. ".gif"))
+  sprite:saveCopyAs(app.fs.joinPath(OUTPUT_DIR, sample.name .. "-sheet.png"))
+
+  print(
+    ("%s: %d frames from %d part(s), read from the %s"):format(
+      sample.name,
+      result.lastFrame - result.firstFrame + 1,
+      #tree.order,
+      source
+    )
+  )
+  sprite:close()
+end

@@ -25,13 +25,25 @@ expands and a command runs.
 
 **Trust nothing here without looking.** Whether synthetic input reaches the
 editor at all varies from one moment to the next on this desktop: the same
-sequence that drove the menu once did nothing fifteen minutes later, with the
-window still reported as active and the pointer still obeying. So the rule is
-capture, look, then act on what the capture shows, and check afterwards that
-the thing you clicked actually happened. A click that silently goes nowhere is
+sequence that drove the menu once did nothing an hour later, with the window
+still reported as active.
+
+The failure is narrower than it first looked, and the shape of it is worth
+knowing. Pointer motion still arrives - the menu entry under the pointer
+highlights, so the editor is receiving the move. It is the button press that
+goes nowhere. So a session can look responsive and still refuse every click.
+The rule is therefore: capture, look, act on what the capture shows, and check
+afterwards that the thing you clicked actually happened. A click that silently goes nowhere is
 the normal failure here, and it looks exactly like a click that landed in the
 wrong place - which is how the aiming bug above went undiagnosed long enough
 to be written into this file as a fact about the display server.
+
+**A command can be run without the menu at all.** Start the editor on a
+document with `--script`, and have that script load the extension's command
+module and call it. That is the interactive application - a real window, a
+real document, not batch mode - with no synthetic input anywhere in the path.
+It proves everything a menu click would except the click, and unlike the click
+it works every time.
 
 `render_demo.lua` stays the better tool for checking motion, and does not need
 a desktop session at all: it runs the same code the menu command runs, in batch

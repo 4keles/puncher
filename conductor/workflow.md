@@ -246,7 +246,15 @@ directory; the log is truncated on every run and only written in verbose mode.
 ```bash
 lua tests/run_all.lua                        # core unit tests, no Aseprite needed
 "$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua   # runtime tests
+"$ASEPRITE_BIN" --batch --script tools/check_reference.lua       # the animation itself
 ```
+
+The last one is the visual regression check. It renders the demonstration and
+compares every frame against the references committed under `assets/`. A
+difference is not automatically a fault - it is a change that has to be looked
+at, and then recorded deliberately by copying the new frames over the
+references in the same commit that caused them. It needs the application, so
+it runs locally rather than in continuous integration.
 
 ### Looking at the Interface
 

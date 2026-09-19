@@ -1,0 +1,111 @@
+-- Carrying pixels across the boundary.
+--
+-- The core works on a matrix, which is plain data it can reason about with no
+-- editor running. The application works on an image, which it owns. This is
+-- the only place the two meet.
+--
+-- The transfer goes through the image's raw bytes rather than one call per
+-- pixel. A limb turned eight times finer is a few hundred thousand pixels, and
+-- a crossing per pixel at that volume is the difference between a command that
+-- feels instant and one that does not.
+--
+-- The layout is the application's own: each pixel is a fixed number of bytes,
+-- least significant first, with rows a fixed stride apart. That is an
+-- assumption about someone else's format, so it is not trusted - the runtime
+-- tests read an image both ways and compare, on every colour mode, and they
+-- fail if the two ever disagree.
+
+local matrix = require("core.matrix")
+
+local M = {}
+
+--- Read part of an image into a matrix.
+--
+-- A rectangle may reach past the image, and that is not a mistake. A part is
+-- marked in the sprite's coordinates while a cel holds only the pixels that
+-- were drawn on, so a rectangle with any margin around a limb routinely
+-- starts outside the cel it is cut from. Anywhere outside, nothing is drawn,
+-- which is the same answer the matrix gives for the same question.
+--
+-- Reaching past the image must never be answered by reading the buffer
+-- anyway. Indexing a string from before its start counts backwards from its
+-- end in this language, so an unchecked read does not fail - it returns bytes
+-- from the far side of the picture and assembles them into colours that were
+-- never in the drawing. That is the one thing this project refuses to let
+-- happen quietly, so the bounds are checked per pixel rather than assumed.
+-- @tparam table image
+-- @tparam ?table bounds  x, y, width, height; the whole image by default
+-- @treturn table a matrix
+function M.toMatrix(image, bounds)
+  bounds = bounds or { x = 0, y = 0, width = image.width, height = image.height }
+
+  local built = matrix.new(bounds.width, bounds.height, image.spec.transparentColor)
+  local bytes = image.bytes
+  local stride = image.rowStride
+  local perPixel = image.bytesPerPixel
+
+  for y = 0, bounds.height - 1 do
+    local sourceY = bounds.y + y
+    if sourceY >= 0 and sourceY < image.height then
+      local rowStart = sourceY * stride
+      for x = 0, bounds.width - 1 do
+        local sourceX = bounds.x + x
+        if sourceX >= 0 and sourceX < image.width then
+          local at = rowStart + sourceX * perPixel
+          local value = 0
+          local place = 1
+          for offset = 1, perPixel do
+            value = value + bytes:byte(at + offset) * place
+            place = place * 256
+          end
+          built:set(x, y, value)
+        end
+      end
+    end
+  end
+
+  return built
+end
+
+--- Turn a matrix into a new image of the same size.
+-- @tparam table built  a matrix
+-- @tparam table spec   the image specification to create against
+-- @treturn table an image
+function M.toImage(built, spec)
+  local image = Image(ImageSpec {
+    width = math.max(built.width, 1),
+    height = math.max(built.height, 1),
+    colorMode = spec.colorMode,
+    transparentColor = spec.transparentColor,
+  })
+
+  local perPixel = image.bytesPerPixel
+  local stride = image.rowStride
+  local row = {}
+  local all = {}
+
+  for y = 0, built.height - 1 do
+    for x = 0, built.width - 1 do
+      local value = built:get(x, y)
+      for _ = 1, perPixel do
+        row[#row + 1] = string.char(value % 256)
+        value = math.floor(value / 256)
+      end
+    end
+    -- A row may be padded beyond the pixels it holds, so anything left over
+    -- is filled rather than left for the next row to fall into.
+    while #row * 1 < stride do
+      row[#row + 1] = "\0"
+    end
+    all[#all + 1] = table.concat(row)
+    row = {}
+  end
+
+  if #all > 0 then
+    image.bytes = table.concat(all)
+  end
+
+  return image
+end
+
+return M
