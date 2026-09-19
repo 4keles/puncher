@@ -140,6 +140,122 @@ function M.run(support)
   sprite:close()
 
   M.runEmptyResultIsRefused(support)
+  M.runTransparentIndexIsNotAssumedToBeZero(support)
+end
+
+-- The whole chain on a document that calls something other than zero nothing.
+-- The matrix layer defaults to zero meaning nothing, which makes this the easy
+-- case to get wrong: a document whose transparent index is nine would either
+-- lose every pixel of index nine, or gain nine as a colour it never had.
+local ELSEWHERE_TRANSPARENT = 9
+local TORSO_INDEX = 3
+local ARM_INDEX = 7
+
+function M.runTransparentIndexIsNotAssumedToBeZero(support)
+  local sprite = Sprite(ImageSpec { width = 96, height = 48, colorMode = ColorMode.INDEXED })
+  sprite.transparentColor = ELSEWHERE_TRANSPARENT
+
+  local image = Image(ImageSpec {
+    width = 12,
+    height = 20,
+    colorMode = ColorMode.INDEXED,
+    transparentColor = ELSEWHERE_TRANSPARENT,
+  })
+  for y = 0, image.height - 1 do
+    for x = 0, image.width - 1 do
+      image:drawPixel(x, y, ELSEWHERE_TRANSPARENT)
+    end
+  end
+  for y = 0, 13 do
+    for x = 2, 9 do
+      image:drawPixel(x, y, TORSO_INDEX)
+    end
+  end
+  for y = 4, 11 do
+    image:drawPixel(10, y, ARM_INDEX)
+  end
+  local cel = sprite:newCel(sprite.layers[1], 1, image, Point(10, 14))
+
+  rig.mark(sprite, {
+    name = "torso",
+    role = "body",
+    rect = { x = 12, y = 14, width = 8, height = 14 },
+    pivot = { x = 4, y = 13 },
+  })
+  rig.mark(sprite, {
+    name = "arm",
+    role = "arm",
+    parent = "torso",
+    rect = { x = 20, y = 18, width = 1, height = 8 },
+    pivot = { x = 0, y = 0 },
+  })
+
+  local list, source = rig.read(sprite, cel)
+  support.assertEquals(source, "slices", "the marked parts were not read back")
+  local tree = parts.tree(list)
+
+  local drawn = drawlist.fromMotionPath {
+    tree = tree,
+    part = tree.roots[1],
+    layer = "Puncher Indexed",
+    swing = { part = "arm", from = -25, to = 70, curve = "cubicOut" },
+    path = PATH,
+  }
+  drawlist.validate(drawn, tree)
+
+  local result = frames.applyDrawList {
+    sprite = sprite,
+    cel = cel,
+    parts = tree.byName,
+    drawList = drawn,
+    tagName = "indexed-test",
+  }
+  support.assertEquals(result.blankFrames, 0, "a frame came out empty on an indexed sprite")
+
+  local produced = nil
+  for _, layer in ipairs(sprite.layers) do
+    if layer.name == "Puncher Indexed" then
+      produced = layer
+    end
+  end
+  support.assertNotNil(produced, "the layer was not created")
+
+  local invented = 0
+  local armPixels = 0
+  for _, drawnCel in ipairs(produced.cels) do
+    for y = 0, drawnCel.image.height - 1 do
+      for x = 0, drawnCel.image.width - 1 do
+        local value = drawnCel.image:getPixel(x, y)
+        if value == ARM_INDEX then
+          armPixels = armPixels + 1
+        elseif value ~= TORSO_INDEX and value ~= ELSEWHERE_TRANSPARENT then
+          invented = invented + 1
+        end
+      end
+    end
+  end
+  support.assertEquals(invented, 0, "an index appeared that was not in the drawing")
+  support.assertTrue(armPixels > 0, "the arm was lost entirely on an indexed sprite")
+
+  -- And the promise that holds whatever the colour mode: the artist's own
+  -- drawing comes through untouched.
+  local disturbed = 0
+  for y = 0, cel.image.height - 1 do
+    for x = 0, cel.image.width - 1 do
+      local expected = ELSEWHERE_TRANSPARENT
+      if x >= 2 and x <= 9 and y <= 13 then
+        expected = TORSO_INDEX
+      elseif x == 10 and y >= 4 and y <= 11 then
+        expected = ARM_INDEX
+      end
+      if cel.image:getPixel(x, y) ~= expected then
+        disturbed = disturbed + 1
+      end
+    end
+  end
+  support.assertEquals(disturbed, 0, "the source cel was modified")
+
+  sprite:close()
 end
 
 --- An animation where nothing was drawn must say so, not report success.
