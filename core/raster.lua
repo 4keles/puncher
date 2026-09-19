@@ -38,6 +38,10 @@ local function round(value)
 end
 
 --- Move every pixel by the same whole number of pixels.
+-- This moves pixels inside a fixed frame, so anything pushed over the edge is
+-- gone. That is the right behaviour for scrolling a picture's contents and the
+-- wrong one for moving a body part: a part is moved by placing it somewhere
+-- else, not by sliding its pixels within their own box.
 -- @tparam table source
 -- @tparam number dx
 -- @tparam number dy
@@ -82,23 +86,41 @@ end
 -- so the picture leans while every pixel stays exactly itself. Rows near each
 -- other therefore share a displacement rather than landing between two, which
 -- is the staircase a pixel artist would draw by hand.
+--
+-- The result grows to hold the whole lean. An earlier version kept the
+-- original size, and looking at a real figure leaning showed what that costs:
+-- at any lean worth having, the rows furthest from the pivot travel further
+-- than the picture is wide and the legs simply vanish. Losing part of a
+-- drawing without saying so is the worst thing this layer could do, so the
+-- frame moves instead.
 -- @tparam table source
 -- @tparam table options  factor, and the row the lean pivots about
--- @treturn table a new matrix
+-- @treturn table a new matrix, large enough to hold every row
+-- @treturn number where the new picture's left edge sits relative to the old
 function M.shear(source, options)
   local factor = options.factor or 0
   local pivotRow = options.pivotRow or 0
 
-  local result = matrix.new(source.width, source.height, source.transparent)
+  local offsets = {}
+  local leftmost, rightmost = 0, 0
 
   for y = 0, source.height - 1 do
     local offset = round(factor * (y - pivotRow))
+    offsets[y] = offset
+    leftmost = math.min(leftmost, offset)
+    rightmost = math.max(rightmost, offset)
+  end
+
+  local result = matrix.new(source.width + rightmost - leftmost, source.height, source.transparent)
+
+  for y = 0, source.height - 1 do
+    local offset = offsets[y] - leftmost
     for x = 0, source.width - 1 do
       result:set(x + offset, y, source:get(x, y))
     end
   end
 
-  return result
+  return result, leftmost
 end
 
 return M

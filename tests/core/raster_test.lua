@@ -76,25 +76,49 @@ end
 
 function TestRaster:testShearDisplacesEachRowByAWholeNumberOfPixels()
   local source = raster.fromRows {
-    "a..",
-    "a..",
-    "a..",
+    "a",
+    "a",
+    "a",
   }
-  local sheared = rasterOps.shear(source, { factor = 1, pivotRow = 0 })
+  local sheared, left = rasterOps.shear(source, { factor = 1, pivotRow = 0 })
   luaunit.assertEquals(raster.toRows(sheared), {
     "a..",
     ".a.",
     "..a",
   })
+  luaunit.assertEquals(left, 0)
   raster.assertNoColourInvented(luaunit, source, sheared)
 end
 
-function TestRaster:testShearLeansTheOtherWayForANegativeFactor()
+-- The whole reason the result grows: at any lean worth having, the rows
+-- furthest from the pivot travel further than the picture is wide.
+
+function TestRaster:testShearGrowsRatherThanLosingTheRowsThatTravelFurthest()
   local source = raster.fromRows {
-    "..a",
-    "..a",
-    "..a",
+    "a",
+    "a",
+    "a",
+    "a",
+    "a",
   }
+  local sheared = rasterOps.shear(source, { factor = 1, pivotRow = 0 })
+  luaunit.assertEquals(sheared.width, 5)
+  luaunit.assertEquals(#matrix.colours(sheared), 1)
+  for y = 0, 4 do
+    luaunit.assertEquals(sheared:get(y, y), string.byte("a"), "row " .. y .. " was lost")
+  end
+end
+
+function TestRaster:testShearReportsWhereTheNewLeftEdgeSits()
+  local source = raster.fromRows { "a", "a", "a" }
+  local _, left = rasterOps.shear(source, { factor = -1, pivotRow = 0 })
+  -- Leaning the other way pushes rows to the left of where the picture began,
+  -- so the caller is told how far the frame moved.
+  luaunit.assertEquals(left, -2)
+end
+
+function TestRaster:testShearLeansTheOtherWayForANegativeFactor()
+  local source = raster.fromRows { "a", "a", "a" }
   luaunit.assertEquals(raster.toRows(rasterOps.shear(source, { factor = -1, pivotRow = 0 })), {
     "..a",
     ".a.",
@@ -103,16 +127,12 @@ function TestRaster:testShearLeansTheOtherWayForANegativeFactor()
 end
 
 function TestRaster:testShearPivotsAboutTheRowItWasGiven()
-  local source = raster.fromRows {
-    ".a.",
-    ".a.",
-    ".a.",
-  }
-  luaunit.assertEquals(raster.toRows(rasterOps.shear(source, { factor = 1, pivotRow = 1 })), {
-    "a..",
-    ".a.",
-    "..a",
-  })
+  local source = raster.fromRows { "a", "a", "a" }
+  local sheared, left = rasterOps.shear(source, { factor = 1, pivotRow = 1 })
+  luaunit.assertEquals(raster.toRows(sheared), { "a..", ".a.", "..a" })
+  -- Pivoting about the middle row sends the first row one place left of where
+  -- the picture started.
+  luaunit.assertEquals(left, -1)
 end
 
 function TestRaster:testShearByNothingIsTheIdentity()
@@ -121,20 +141,15 @@ function TestRaster:testShearByNothingIsTheIdentity()
 end
 
 function TestRaster:testAFractionalShearStillDisplacesByWholePixels()
-  local source = raster.fromRows {
-    "a...",
-    "a...",
-    "a...",
-    "a...",
-  }
+  local source = raster.fromRows { "a", "a", "a", "a" }
   -- Half a pixel per row: the offsets round, so rows share displacements
   -- rather than landing between pixels.
   local sheared = rasterOps.shear(source, { factor = 0.5, pivotRow = 0 })
   luaunit.assertEquals(raster.toRows(sheared), {
-    "a...",
-    ".a..",
-    ".a..",
-    "..a.",
+    "a..",
+    ".a.",
+    ".a.",
+    "..a",
   })
 end
 
@@ -145,12 +160,11 @@ function TestRaster:testEveryTransformLeavesAnEmptyPictureEmpty()
   luaunit.assertEquals(#matrix.colours(rasterOps.shear(empty, { factor = 1 })), 0)
 end
 
-function TestRaster:testEveryTransformKeepsThePictureTheSameSize()
+function TestRaster:testTheTransformsThatCannotLosePixelsKeepTheirSize()
   local source = raster.fromRows(SHAPE)
   for _, result in ipairs {
     rasterOps.translate(source, 1, 1),
     rasterOps.mirror(source, "vertical"),
-    rasterOps.shear(source, { factor = 1 }),
   } do
     luaunit.assertEquals(result.width, source.width)
     luaunit.assertEquals(result.height, source.height)
