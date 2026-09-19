@@ -1,0 +1,30 @@
+Task: Closing condition demonstration
+
+All four clauses were demonstrated from a copy of the repository taken out of
+version control into an empty directory, so nothing in the working tree could
+be propping the result up.
+
+1. Core tests from the clean copy: one command, 78 tests, 0 failures, exit 0.
+
+2. The extension installed from that clean copy into the application's own
+   configuration directory. The application's log confirms it loaded, and the
+   interface was then driven and captured: the File menu opens, a Puncher group
+   sits in it, and its submenu carries both commands.
+
+3. The runtime suite run by the real binary from the clean copy: 29 checks, 0
+   failures, exit 0.
+
+4. The motion watched twice. Once interactively: the command was run from the
+   menu on the bundled sample character, reported eleven produced frames, left
+   the original layer alone, and one press of undo removed the whole result -
+   the application's own status line said so. Once as frames: every frame of
+   the rendered animation was looked at in order, showing the held opening
+   beat, one large step, progressively smaller steps as it slows, and the
+   landing held at the end.
+
+Found while doing this: the interface driver aimed every click tens of pixels
+wide, because it took the window's position inside its frame for its position
+on screen. That is why an earlier session concluded synthetic input does not
+arrive here and wrote that into the tool documentation as fact. Both the code
+and the documentation are corrected, and the corrected driver was used to open
+the menu and submenu from coordinates read off a captured image.
