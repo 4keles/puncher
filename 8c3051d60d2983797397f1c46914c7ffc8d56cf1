@@ -1,0 +1,32 @@
+Phase 5: the rigged sample and the closing demonstration
+
+All three clauses of the closing condition demonstrated from a copy of the
+repository taken out of version control into an empty directory.
+
+1. A character whose parts are marked: the arm rotates about its shoulder
+   while the body travels. Watched frame by frame, not judged from one frame.
+   The first attempt put the shoulder at the middle of the arm's top edge and
+   watching it showed the limb swinging away from the body and reading as
+   having come off; the pivot now sits at the corner that touches the torso.
+
+2. A character with nothing marked, through the same code path, produces the
+   dash it produced before - proven by every reference frame still matching
+   rather than by inspection. One command serves both because the document
+   declares what it is: a swing names a part, and a rig without that part
+   swings nothing.
+
+3. The rotation comparison reproduces from the clean copy with the same
+   figures that chose the route, and the decision is in the stack document.
+
+Also proven in the interactive application, not only in batch: the editor was
+started on the rigged character with a script that loads the extension's own
+command module and calls it. The result was a new layer of nine frames, a tag,
+the original layer untouched, and the command's own message naming where the
+parts came from. That route is now recorded in the tool documentation, because
+driving the menu with synthetic input failed again and the failure turns out
+to be narrower than first thought - pointer motion arrives and highlights the
+entry under it, while the button press goes nowhere.
+
+Gates: 206 unit tests, 71 runtime checks, both demonstrations matching all
+twenty reference frames, linter and formatter clean across 52 files, core
+layer clean, core coverage 100 percent across 11 files.
