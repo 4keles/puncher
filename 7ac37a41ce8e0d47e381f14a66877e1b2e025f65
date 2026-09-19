@@ -1,0 +1,26 @@
+Task: Machine-specific value sweep
+
+What was searched: every tracked file, for absolute paths under a home
+directory, for this machine's account name, for the directory the drawing
+application was built in, and for the binary being invoked by a fixed name.
+
+What was found: no absolute paths and no account name anywhere - the repository
+was already clean on that count. Three real findings instead:
+
+1. The user-local package tree was located by twenty duplicated lines in the
+   test runner and in both check commands, with the interpreter version written
+   into six paths by hand. Replaced by one helper that reads the version from
+   the interpreter.
+
+2. Three commands written in the process and stack documents invoked the
+   drawing application by a fixed name instead of the environment variable the
+   same document defines for it. Corrected.
+
+3. One of those documented commands pointed at a script path that does not
+   exist - it named the core runner where it meant the runtime one. Corrected.
+
+Also brought the track's recorded status into line with reality.
+
+Gates after the sweep: 78 unit tests pass, 29 runtime checks pass inside the
+real application, linter and formatter clean across 30 files, core layer clean,
+core coverage 100 percent.
