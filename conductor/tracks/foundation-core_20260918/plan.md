@@ -235,35 +235,37 @@ result cannot be seen is not a step.
 Raised by the mandatory code and security reviews before the merge, and each
 one reproduced independently before being accepted.
 
-- [ ] Correction: The layer boundary check can be silenced from a distance
-  - [ ] Cause: the list of names a file is allowed to use is collected across
+- [x] Correction: The layer boundary check can be silenced from a distance `df8e709`
+  - [x] Cause: the list of names a file is allowed to use is collected across
         the whole file with no notion of scope, so one function naming a
         parameter after an application global hides a genuine breach in a
         different function entirely
-  - [ ] Write failing tests: a shadow in one function must not hide a
+  - [x] Write failing tests: a shadow in one function must not hide a
         violation in another; a shadow must still protect its own function; a
         name used before it is declared is still the application's; block
         keywords must balance so scopes do not leak
-  - [ ] Rebuild the check as an ordered walk with a scope stack
-  - [ ] Confirm the deliberate violation is caught again
+  - [x] Rebuild the check as an ordered walk with a scope stack
+  - [x] Confirm the deliberate violation is caught again
 
-- [ ] Correction: The forbidden list has drifted from the linter's list
-  - [ ] Cause: the same fact - which names the application injects - is held
+- [x] Correction: The forbidden list has drifted from the linter's list `df8e709`
+  - [x] Cause: the same fact - which names the application injects - is held
         by hand in two files, and one already lost an entry the other has
-  - [ ] Give the fact a single owner that both consume
-  - [ ] Write a test that fails if the two ever disagree again
+  - [x] Give the fact a single owner that both consume
+  - [x] Write a test that fails if the two ever disagree again
 
-- [ ] Correction: Held frames float during a jump
-  - [ ] Cause: height is recomputed from a frame's position in the list rather
+- [x] Correction: Held frames float during a jump `df8e709`
+  - [x] Cause: height is recomputed from a frame's position in the list rather
         than from the progress the sampler actually produced, so a frame that
         holds on the ground is lifted off it
-  - [ ] Write a failing test for a jump with holds at both ends
-  - [ ] Carry the sampled progress through instead of re-deriving it
+  - [x] Write a failing test for a jump with holds at both ends
+  - [x] Carry the sampled progress through instead of re-deriving it
 
-- [ ] Correction: Backlog rows and small cleanups
-  - [ ] Record the deferred security findings as backlog rows
-  - [ ] Remove the duplicated clamp helper from the two core modules
-  - [ ] Record in the adapter's note that every produced cel shares one image,
+- [x] Correction: Backlog rows and small cleanups `df8e709`
+  - [x] Record the deferred security findings as backlog rows
+  - [x] Remove the duplicated clamp helper from the two core modules
+  - [x] Record in the adapter's note that every produced cel shares one image,
         which matters the moment a later track paints per frame
 
-- [ ] Task: Rerun every gate affected and re-confirm the remote is green
+- [x] Task: Rerun every gate affected and re-confirm the remote is green `df8e709`
+
+## Phase 5 complete [checkpoint: df8e709]
