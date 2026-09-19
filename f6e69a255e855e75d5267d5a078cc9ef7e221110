@@ -1,0 +1,22 @@
+Task: Coverage threshold gate
+
+What it does: reads the report the coverage tool writes, extracts the total
+percentage and the per-file figures, and returns a failing exit code when the
+total is under the target. The target has a documented default and can be
+raised for one run from the command line.
+
+Why it was needed: the coverage tool always exits zero, so before this the
+number was produced and then ignored. An automated run that prints a falling
+coverage figure and passes anyway is not a gate.
+
+Refusal cases, deliberately: an empty report, a report with no summary section,
+a summary with no total line, and a summary that measured no files at all. Each
+fails with its reason instead of being read as full coverage.
+
+Proven by: nine unit tests covering every refusal case and both sides of the
+threshold, and by running the real command twice against a real report - once
+at the documented target, which passed, and once at a target above what was
+measured, which failed with a non-zero exit code and named the weakest file.
+
+Gates: 72 unit tests pass, linter and formatter clean across 28 files, core
+layer clean per the boundary check, core coverage 100 percent across 6 files.
