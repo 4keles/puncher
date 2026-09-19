@@ -146,6 +146,42 @@ wrong, and the numbers said so.
 
 Reproduce with `"$ASEPRITE_BIN" --batch --script tools/compare_rotation.lua`.
 
+#### What that measurement could not see (2026-09-20)
+
+The agreement score above is computed against a thirty-two-fold detour, which
+is the same enlarge, turn and vote pipeline as the candidate it is judging,
+only finer. That makes it a fair measure of angular precision - a finer grid
+really does resolve an angle better - and an unfair one for the reduction
+rule, because the standard shares the candidate's rule. It is also blind to
+detail by construction: agreement counts every pixel alike, and the pixels
+that carry a face are three out of two hundred.
+
+Measured again with a standard that shares nothing with any candidate. A turn
+preserves area, so the count of each colour should survive it. On a figure
+with detail drawn into it, averaged over the same six angles:
+
+| Route | Large regions | A line one pixel wide | Single pixels |
+| --- | --- | --- | --- |
+| Turn on the native grid | 99-103% | 109% | 67% and 83% |
+| Enlarge eightfold, turn, vote | 99-103% | 94% | 42% and 33% |
+| Enlarge eightfold, turn, sample the centre | 99-101% | 85% | 58% and 50% |
+| Enlarge sixteenfold, turn, vote | 99-103% | 94% | 42% and 33% |
+
+So the chosen route is the best of these at edges and at thin limbs, and the
+worst at single pixels: it loses around three fifths of them. Sixteenfold
+recovers none of that, which places the cause in the vote rather than in the
+grid - a block the body merely outnumbers goes to the body, and an eye is
+always outnumbered.
+
+The route is not being changed, because no candidate measured here is better
+overall and sampling the centre trades a worse thin limb for a still-poor eye.
+What this is instead is a stated limit: a detail one pixel across is not
+reliably carried through a turn by any route measured so far. Recorded as a
+backlog row, because the fix is a reduction that knows a small feature from
+noise, which is a piece of research rather than a repair.
+
+Reproduce with `lua tools/measure_detail.lua`, which needs no editor.
+
 ## Test and Quality Infrastructure
 
 | Layer | Tool | Note |
