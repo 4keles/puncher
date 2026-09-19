@@ -55,42 +55,45 @@ Every step below is a single action with an observable result.
 
 ## Phase 2 — Rotation, Decided by Measurement
 
-- [ ] Task: Rotation by inverse mapping
-  - [ ] Write failing tests: rotating by a quarter turn matches the exact
+- [x] Task: Rotation by inverse mapping `580c902`
+  - [x] Write failing tests: rotating by a quarter turn matches the exact
         expected pixels; rotating by zero is the identity; four quarter turns
         return the original; the rotated bounds are computed from the corners
         rather than assumed square; no colour is invented
-  - [ ] Implement the rotation
-  - [ ] Refactor and re-run
+  - [x] Implement the rotation
+  - [x] Refactor and re-run
 
-- [ ] Task: Edge-aware enlargement
-  - [ ] Write failing tests: every output pixel is copied from the source
+- [x] Task: Edge-aware enlargement `580c902`
+  - [x] Write failing tests: every output pixel is copied from the source
         neighbourhood and never blended; a flat region enlarges unchanged; a
         diagonal edge gains the expected stepped corner; applying it twice
         gives four times the size
-  - [ ] Implement the doubling filter, applied repeatedly to reach a factor
-  - [ ] Refactor and re-run
+  - [x] Implement the doubling filter, applied repeatedly to reach a factor
+  - [x] Refactor and re-run
 
-- [ ] Task: Reduction that picks rather than blends
-  - [ ] Write failing tests: each output pixel is one of the values in the
+- [x] Task: Reduction that picks rather than blends `580c902`
+  - [x] Write failing tests: each output pixel is one of the values in the
         block it came from; ties resolve the same way every run, so the whole
         pipeline stays deterministic; a uniform block reduces to its own value
-  - [ ] Implement the reduction
-  - [ ] Refactor and re-run
+  - [x] Implement the reduction
+  - [x] Refactor and re-run
 
-- [ ] Task: The rotation comparison
-  - [ ] Build the three candidates over the same part: enlarge-rotate-reduce,
+- [x] Task: The rotation comparison `580c902`
+  - [x] Build the three candidates over the same part: enlarge-rotate-reduce,
         quarter turns and mirrors only, and a pre-computed fixed angle set
-  - [ ] Render all three at the same angles, at a limb's real size, into one
+  - [x] Render all three at the same angles, at a limb's real size, into one
         sheet
-  - [ ] Look at the sheet and decide
-  - [ ] Measure how long each takes for one part and record the figure
-  - [ ] Write the decision and its evidence into the stack document
-  - [ ] If every candidate is rejected, stop and bring the fallback back to
-        the operator rather than choosing quietly
+  - [x] Look at the sheet and decide
+  - [x] Measure how long each takes for one part and record the figure
+  - [x] Write the decision and its evidence into the stack document
+  - [x] If every candidate is rejected, stop and bring the fallback back to
+        the operator rather than choosing quietly (not needed: two candidates
+        cleared the bar and one was chosen on cost)
 
-- [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
-  - [ ] Visual verification: the comparison sheet is looked at, not inferred
+- [x] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`) `580c902`
+  - [x] Visual verification: the comparison sheet is looked at, not inferred
+
+## Phase 2 complete [checkpoint: 580c902]
 
 ## Phase 3 — Parts, the Tree and Forward Kinematics
 
