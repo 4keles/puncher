@@ -1,0 +1,31 @@
+Phase 5: review corrections
+
+Both reviews ran before the merge, as the repository's rules require, and both
+findings that blocked were reproduced independently before being accepted
+rather than taken on the reviewer's word.
+
+Blocking, both in the layer boundary check:
+
+1. Scope. The check excused a name everywhere in a file if it was declared
+   anywhere in it. Proven by a file with a borrowed parameter in one function
+   and a real call into the application in another: zero findings. Rebuilt as
+   an ordered walk with a scope stack, and proven again by putting the same
+   pair into a real core module - the breach is now reported and the
+   legitimate borrow is not.
+
+2. Drift. The list of injected names was maintained by hand in two files and
+   one had already lost an entry. Given a single owner; a test now fails if
+   they disagree.
+
+High, not blocking but fixed here because it is small and it is public core
+surface: a jump lifted its held frames off the ground, because height came
+from a frame's index rather than its sampled progress.
+
+Deferred, with reasons, as backlog rows: the formatter download has no
+integrity check (bounded today by read-only rights and no secrets), the
+checkout step is pinned by tag rather than commit, and the frame count and
+distance are unbounded once a dialog exposes them.
+
+Gates after the corrections: 92 unit tests, 29 runtime checks, linter and
+formatter clean across 33 files, core layer clean, core coverage 100 percent
+across 7 files.
