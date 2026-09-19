@@ -48,8 +48,8 @@ v1.2.30) — all three together are only guaranteed from v1.3-rc7 onward.
 
 Headless operation (`--batch --script`) has been verified: it runs without a
 display → an integration test strategy is viable. The following API
-capabilities were tested live and work: `Image:resize{method='rotsprite'}`,
-global `json`, `Image.bytes`.
+capabilities were tested live and work: `Image:resize{method='rotsprite'}`
+(a scaling method, not a rotation), global `json`, `Image.bytes`.
 
 Between v1.3.15.3 and v1.3.18.5, the scripting API went from v36 to v41.
 Behavior changes that concern us: `properties` changes made outside a
@@ -67,7 +67,7 @@ freeze/hitstop frames.
 | Pixel read/write (simple) | `image:pixels()`, `Image:getPixel` | Only for small regions. |
 | Pixel write | `Image:drawPixel` | `putPixel` **will not be used** — deprecated and generates an undo record on every call. |
 | Composition | `Image:drawImage(img, pos, opacity, blendMode)` | Combining VFX layers. |
-| Pixel-art-safe scaling/rotation | `Image:resize{ method='rotsprite' }` | RotSprite is natively available — no need for our own implementation. |
+| Pixel-art-safe scaling | `Image:resize{ method='rotsprite' }` | The RotSprite *scaling* method is available. It is not a rotation: see the rotation row below. |
 | Built-in commands | `app.command.X{...}` | `Rotate`, `SpriteSize`, `CanvasSize`, etc. |
 | Non-destructive operation | `app.transaction(fn, "label")` | Each command is a single transaction; `error()` inside it → automatic rollback. |
 | Interface | `Dialog` + `canvas` widget | `onpaint(ev)` → `ev.context` (GraphicsContext); `onmousemove`, `dlg:repaint()`. For live preview. |
@@ -106,7 +106,7 @@ target.
 | Color quantization | Wu / median-cut + k-means refinement (libimagequant model), on `Image.bytes` | Gerstner et al. joint superpixel+palette optimization (NPAR 2012) — highest quality but iterative and on the order of seconds → **v2** |
 | Color distance | **OKLab** Euclidean distance | RGB (perceptually incorrect), CIELAB (hue shift in the blue region) |
 | Dithering | **Bayer (ordered)** 4x4/8x8, default **off** | Floyd-Steinberg — "shifting" noise between frames creates flicker in animation |
-| Rotation/scaling | Native `rotsprite` + pixel-grid snapping + sub-pixel accumulator | Naive nearest/bilinear rotation (jaggy, blurry) |
+| Rotation | Written in pure Lua over a pixel matrix, with pixel-grid snapping and the sub-pixel accumulator | Relying on the application to rotate — verified against the source: it cannot, from a script |
 | Deformation | Part-based affine (head/torso/arm/leg cut from the sheet + pivot) | Full mesh warping / ARAP — unnecessary complexity |
 | Pixelization (AI) | None | GAN/diffusion pixelization — palette and grid inconsistency between frames, GPU dependency → **v2 option** |
 | Screen shake / hitstop | Exported as JSON metadata | Real screen shake is not possible within the Aseprite canvas |
