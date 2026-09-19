@@ -210,4 +210,75 @@ function TestParts:testEveryPartComesBackPlaced()
   end
 end
 
+-- Three levels. A two-level rig passing does not prove that a grandchild is
+-- carried correctly, because at two levels the inherited angle and the total
+-- angle are the same number. These expectations were worked out by hand from
+-- the geometry, not read back out of the solver.
+
+local CHAIN = {
+  { name = "shoulder", rect = rectangle(16, 20, 8, 8), pivot = { x = 4, y = 0 } },
+  {
+    name = "elbow",
+    rect = rectangle(16, 30, 8, 8),
+    pivot = { x = 4, y = 0 },
+    parent = "shoulder",
+  },
+  { name = "wrist", rect = rectangle(16, 40, 8, 8), pivot = { x = 4, y = 0 }, parent = "elbow" },
+}
+
+-- Rest pivots: shoulder 20,20, elbow 20,30, wrist 20,40. Each hangs ten below
+-- the one above it, so the arithmetic below is readable rather than magic.
+local function chainPose(shoulder, elbow)
+  return parts.solve(parts.tree(CHAIN), {
+    shoulder = { rotation = shoulder },
+    elbow = { rotation = elbow },
+  })
+end
+
+function TestParts:testAGrandchildInheritsBothAnglesAbove()
+  local placed = chainPose(90, 90)
+  -- Each angle is the total the part ended up at, not the amount it was asked
+  -- to turn. The shoulder turned a quarter and stays at a quarter. The elbow
+  -- was asked for another quarter on top of that, so it sits at half a turn.
+  -- The wrist was asked for nothing, and still sits at half a turn, because
+  -- everything above it carried it there.
+  luaunit.assertAlmostEquals(placed.shoulder.angle, 90, 1e-9)
+  luaunit.assertAlmostEquals(placed.elbow.angle, 180, 1e-9)
+  luaunit.assertAlmostEquals(placed.wrist.angle, 180, 1e-9)
+end
+
+function TestParts:testAGrandchildIsCarriedByEveryTurnAboveIt()
+  -- The shoulder turns a quarter clockwise on screen. The elbow sat ten below
+  -- it, so it swings to ten to the left: 10,20. The wrist sat ten below the
+  -- elbow, and both turns carry it, so it swings a further ten left: 0,20.
+  local placed = chainPose(90, 0)
+  luaunit.assertAlmostEquals(placed.elbow.pivot.x, 10, 1e-9)
+  luaunit.assertAlmostEquals(placed.elbow.pivot.y, 20, 1e-9)
+  luaunit.assertAlmostEquals(placed.wrist.pivot.x, 0, 1e-9)
+  luaunit.assertAlmostEquals(placed.wrist.pivot.y, 20, 1e-9)
+end
+
+function TestParts:testATurnAtTheElbowLeavesTheShoulderWhereItWas()
+  -- Only what hangs below a joint may move when it turns.
+  local placed = chainPose(0, 90)
+  luaunit.assertAlmostEquals(placed.shoulder.pivot.x, 20, 1e-9)
+  luaunit.assertAlmostEquals(placed.shoulder.pivot.y, 20, 1e-9)
+  luaunit.assertAlmostEquals(placed.elbow.pivot.x, 20, 1e-9)
+  luaunit.assertAlmostEquals(placed.elbow.pivot.y, 30, 1e-9)
+  luaunit.assertAlmostEquals(placed.wrist.pivot.x, 10, 1e-9)
+  luaunit.assertAlmostEquals(placed.wrist.pivot.y, 30, 1e-9)
+end
+
+function TestParts:testAPushAtTheShoulderCarriesEverythingBelowIt()
+  -- An offset is in canvas units and must travel down the chain, or a limb
+  -- detaches from the body the moment the body moves.
+  local placed = parts.solve(parts.tree(CHAIN), {
+    shoulder = { offset = { x = 7, y = -3 } },
+  })
+  luaunit.assertAlmostEquals(placed.elbow.pivot.x, 27, 1e-9)
+  luaunit.assertAlmostEquals(placed.elbow.pivot.y, 27, 1e-9)
+  luaunit.assertAlmostEquals(placed.wrist.pivot.x, 27, 1e-9)
+  luaunit.assertAlmostEquals(placed.wrist.pivot.y, 37, 1e-9)
+end
+
 return { TestParts = TestParts }
