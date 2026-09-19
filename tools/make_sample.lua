@@ -7,7 +7,11 @@
 -- the file this produces is identical on every machine. That matters because
 -- the visual checks compare against it.
 
-local CANVAS = 32
+-- The figure is small, but the canvas is not: a dash that only travels one
+-- body width does not read as a dash, and a character that leaves the canvas
+-- cannot be watched at all. So there is room to the right to move into.
+local FIGURE_HEIGHT = 32
+local CANVAS_WIDTH = 160
 local OUTPUT = "assets/sample-character.aseprite"
 
 local palette = {
@@ -50,7 +54,7 @@ local function outline(image, color)
   end
 end
 
-local sprite = Sprite(CANVAS, CANVAS, ColorMode.RGB)
+local sprite = Sprite(CANVAS_WIDTH, FIGURE_HEIGHT, ColorMode.RGB)
 sprite.layers[1].name = "Character"
 
 local image = sprite.cels[1].image
@@ -65,4 +69,4 @@ fill(image, 17, 21, 3, 6, palette.trousers) -- right leg
 outline(image, palette.outline)
 
 sprite:saveAs(OUTPUT)
-print("wrote " .. OUTPUT .. " (" .. CANVAS .. "x" .. CANVAS .. ")")
+print(("wrote %s (%dx%d)"):format(OUTPUT, CANVAS_WIDTH, FIGURE_HEIGHT))

@@ -37,10 +37,16 @@ local result = frames.applyMotion {
   tagName = "dash",
 }
 
--- The character starts in the middle of a small canvas, so widen it enough
--- that the whole dash stays visible instead of running off the edge.
-local travel = math.abs(preset.distance)
-sprite:crop(0, 0, sprite.width + travel, sprite.height)
+-- The sample canvas already has room for the dash. Widen it only if a preset
+-- asks for more travel than fits, so the motion is never judged from frames
+-- where the character has simply left the picture. What matters is where the
+-- drawing ends, not where its cel ends: a cel covering the whole canvas would
+-- otherwise make every dash look as if it overflowed.
+local drawn = sourceCel.image:shrinkBounds()
+local needed = sourceCel.position.x + drawn.x + drawn.width + math.abs(preset.distance)
+if needed > sprite.width then
+  sprite:crop(0, 0, needed, sprite.height)
+end
 
 if not app.fs.isDirectory(OUTPUT_DIR) then
   app.fs.makeDirectory(OUTPUT_DIR)

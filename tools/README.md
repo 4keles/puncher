@@ -20,17 +20,18 @@ That matters because of a mistake worth not repeating. The window manager
 reports where a window sits *inside its decorated frame*, not where that frame
 sits on screen. Treating the first as the second aimed every click tens of
 pixels away from what was meant - far enough to sail past a menu and land in
-the canvas. The symptom looks exactly like synthetic input not arriving at all,
-which is what it was mistaken for: this file previously claimed the display
-server ignored pointer moves outright and that unattended checks were therefore
-impossible. That was wrong. Pointer moves and keystrokes both arrive; the
-driver was simply aiming at the wrong place. Menus open, submenus expand,
-dialogs can be dismissed and the whole chain can be driven without a person
-present.
+the canvas. That bug is fixed, and with it fixed the menu opens, the submenu
+expands and a command runs.
 
-One real limit remains: the editor only receives synthetic input while it holds
-the session's keyboard focus, so a check that runs while the desktop is busy
-with something else will still go nowhere.
+**Trust nothing here without looking.** Whether synthetic input reaches the
+editor at all varies from one moment to the next on this desktop: the same
+sequence that drove the menu once did nothing fifteen minutes later, with the
+window still reported as active and the pointer still obeying. So the rule is
+capture, look, then act on what the capture shows, and check afterwards that
+the thing you clicked actually happened. A click that silently goes nowhere is
+the normal failure here, and it looks exactly like a click that landed in the
+wrong place - which is how the aiming bug above went undiagnosed long enough
+to be written into this file as a fact about the display server.
 
 `render_demo.lua` stays the better tool for checking motion, and does not need
 a desktop session at all: it runs the same code the menu command runs, in batch
