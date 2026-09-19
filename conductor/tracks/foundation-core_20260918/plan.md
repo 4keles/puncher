@@ -134,23 +134,81 @@ plan update.
 
 ## Phase 4 — Continuous Integration and Closure
 
+Every step below is a single action with an observable result. A step whose
+result cannot be seen is not a step.
+
+- [x] Task: Coverage threshold gate `f6e69a2`
+  - [x] Write a failing test that hands the checker a summary reporting less
+        than the target and expects it to report a shortfall, a summary at the
+        target and expects it to pass, and a report with no summary at all and
+        expects it to fail rather than assume success
+  - [x] Run the test suite and confirm the new tests fail for the stated reason
+  - [x] Implement the checker: it reads the coverage report the coverage tool
+        writes, finds the total line, compares it against the target held in a
+        named configuration entry, and returns a non-zero exit code below it
+  - [x] Run the test suite and confirm every test passes
+  - [x] Run the linter, the formatter check and the boundary check clean
+  - [x] Commit, then attach the task summary as a git note
+
 - [ ] Task: Continuous integration workflow
-  - [ ] Run lint, format check, core tests, coverage and the boundary check on
-        every push and pull request
-  - [ ] Do not build Aseprite in continuous integration
+  - [ ] Decide and write down what the automation may and may not do: it runs
+        the checks that need only a plain Lua interpreter, and it never builds
+        the drawing application, because that build takes tens of minutes and
+        a gigabyte of disk and would make every push unusable as feedback
+  - [ ] Write the workflow so it triggers on every push and on every pull
+        request aimed at the main branch
+  - [ ] Install the interpreter and the package manager from the runner image's
+        own package source, and the three development packages from the package
+        manager, each pinned to the interpreter version this project uses
+  - [ ] Install the formatter by downloading the exact released version
+        recorded in the process document, not the newest one, so a formatter
+        release cannot turn a passing branch red on its own
+  - [ ] Run, in order and each as its own visible step: the linter, the format
+        check, the core test suite, the coverage report with its threshold
+        gate, and the boundary check
+  - [ ] Confirm the file parses as valid workflow syntax before pushing
+  - [ ] Commit, then attach the task summary as a git note
 
 - [ ] Task: Confirm the workflow is green on the remote
-  - [ ] Push and wait for the run to finish
-  - [ ] Fix whatever the run reports until it is green
+  - [ ] Push the branch and confirm the automation actually started; a workflow
+        that never triggers is a silent failure, not a pass
+  - [ ] Watch the run to completion and read the log of every step
+  - [ ] Fix whatever the run reports, push again, and repeat until it is green
+  - [ ] Confirm the run really executed the checks rather than skipping them:
+        the test count and the coverage figure in the remote log must match the
+        ones produced locally
 
 - [ ] Task: Machine-specific value sweep
-  - [ ] Search the repository for absolute paths and remove any found
-  - [ ] Document the environment variable that locates the Aseprite binary
+  - [ ] Search every tracked file for absolute paths belonging to this machine,
+        for the account name, and for the location the drawing application was
+        built in
+  - [ ] Remove anything found, replacing it with a documented environment
+        variable or a path relative to the repository
+  - [ ] Confirm the process document states how to point the environment
+        variable at the drawing application's binary, and that every command in
+        the document uses it rather than a fixed location
+  - [ ] Re-run the test suites after the sweep, because a path change can break
+        a runner silently
+  - [ ] Commit the sweep result, then attach the task summary as a git note
 
 - [ ] Task: Closing condition demonstration
-  - [ ] Show the three proofs end to end: the core test report, the batch run
-        inside the real runtime exiting zero, and the watchable animation on
-        the sample character
-  - [ ] Present the result to the operator for the closure decision
+  - [ ] Prove the first clause: from a clean copy of the repository taken out
+        of version control into an empty directory, one command runs the core
+        test suite to a passing report
+  - [ ] Prove the second clause: install the extension into the application's
+        configuration directory from that clean copy, start the application
+        once with verbose logging, and confirm from the log that the extension
+        loaded; then capture the menu entry visibly
+  - [ ] Prove the third clause: run the batch script inside the real runtime and
+        confirm it exits zero, showing the exit code rather than asserting it
+  - [ ] Prove the fourth clause: run the extension's motion on the bundled
+        sample character and watch the produced animation frame by frame, not
+        a single frame
+  - [ ] Write the four proofs up with their raw output and present them to the
+        operator for the closure decision
 
 - [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
+  - [ ] Run the whole gate set one final time and record the counts
+  - [ ] Attach the phase verification report as a git note
+  - [ ] Mark the phase complete with its checkpoint, tag the savepoint, push
+        the branch and the tags
