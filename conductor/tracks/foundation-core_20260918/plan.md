@@ -150,33 +150,36 @@ result cannot be seen is not a step.
   - [x] Run the linter, the formatter check and the boundary check clean
   - [x] Commit, then attach the task summary as a git note
 
-- [ ] Task: Continuous integration workflow
-  - [ ] Decide and write down what the automation may and may not do: it runs
+- [x] Task: Continuous integration workflow `4ae70f8`
+  - [x] Decide and write down what the automation may and may not do: it runs
         the checks that need only a plain Lua interpreter, and it never builds
         the drawing application, because that build takes tens of minutes and
         a gigabyte of disk and would make every push unusable as feedback
-  - [ ] Write the workflow so it triggers on every push and on every pull
+  - [x] Write the workflow so it triggers on every push and on every pull
         request aimed at the main branch
-  - [ ] Install the interpreter and the package manager from the runner image's
+  - [x] Install the interpreter and the package manager from the runner image's
         own package source, and the three development packages from the package
         manager, each pinned to the interpreter version this project uses
-  - [ ] Install the formatter by downloading the exact released version
+  - [x] Install the formatter by downloading the exact released version
         recorded in the process document, not the newest one, so a formatter
         release cannot turn a passing branch red on its own
-  - [ ] Run, in order and each as its own visible step: the linter, the format
+  - [x] Run, in order and each as its own visible step: the linter, the format
         check, the core test suite, the coverage report with its threshold
         gate, and the boundary check
-  - [ ] Confirm the file parses as valid workflow syntax before pushing
-  - [ ] Commit, then attach the task summary as a git note
+  - [x] Confirm the file parses as valid workflow syntax before pushing
+  - [x] Commit, then attach the task summary as a git note
 
-- [ ] Task: Confirm the workflow is green on the remote
-  - [ ] Push the branch and confirm the automation actually started; a workflow
+- [x] Task: Confirm the workflow is green on the remote `4ae70f8`
+  - [x] Push the branch and confirm the automation actually started; a workflow
         that never triggers is a silent failure, not a pass
-  - [ ] Watch the run to completion and read the log of every step
-  - [ ] Fix whatever the run reports, push again, and repeat until it is green
-  - [ ] Confirm the run really executed the checks rather than skipping them:
+  - [x] Watch the run to completion and read the log of every step
+  - [x] Fix whatever the run reports, push again, and repeat until it is green
+  - [x] Confirm the run really executed the checks rather than skipping them:
         the test count and the coverage figure in the remote log must match the
         ones produced locally
+  - [x] Prove the automation can also fail: push a deliberately broken tree
+        on a throwaway branch, confirm the run turns red and stops at the
+        broken step, then remove the branch
 
 - [ ] Task: Machine-specific value sweep
   - [ ] Search every tracked file for absolute paths belonging to this machine,
