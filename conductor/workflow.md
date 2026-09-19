@@ -15,7 +15,7 @@
    UX principles in `product-guidelines.md` (non-destructive, modular
    commands, sensible defaults).
 6. **Non-interactive & CI-aware:** Commands are chosen so they run
-   non-interactively (e.g. `aseprite --batch --script ...`).
+   non-interactively (e.g. `"$ASEPRITE_BIN" --batch --script ...`).
 
 ## Task Workflow
 
@@ -107,7 +107,8 @@ Every task follows this lifecycle:
 3. **Run Automated Tests:**
    - Announce the exact command you will use before running it.
    - **Example announcement:** "I will run the tests. **Command:**
-     `aseprite --batch --script tests/run_all.lua`"
+     `lua tests/run_all.lua`, then
+     `"$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua`"
    - Run the command.
    - If tests fail, inform the user and start debugging. Make **at most
      two** fix attempts; if still failing, **stop**, report the status, and

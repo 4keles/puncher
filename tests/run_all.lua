@@ -10,30 +10,6 @@
 local TEST_DIRS = { "tests/core", "tests/tools" }
 local TEST_SUFFIX = "_test.lua"
 
--- The package manager installs into a user-local tree that is not on the
--- default search path of a non-interactive shell. Adding it here means the
--- runner works whether or not the caller set the environment up first.
-local function addUserRockTree()
-  local home = os.getenv("HOME")
-  if not home then
-    return
-  end
-
-  local tree = home .. "/.luarocks"
-  package.path = table.concat({
-    tree .. "/share/lua/5.4/?.lua",
-    tree .. "/share/lua/5.4/?/init.lua",
-    package.path,
-  }, ";")
-  -- Distributions disagree on where 64-bit C modules land, so both spellings
-  -- are offered rather than guessing one.
-  package.cpath = table.concat({
-    tree .. "/lib/lua/5.4/?.so",
-    tree .. "/lib64/lua/5.4/?.so",
-    package.cpath,
-  }, ";")
-end
-
 -- Project modules are addressed from the repository root, so `core.easing`
 -- means the file `core/easing.lua` no matter where the runner was started
 -- from.
@@ -53,8 +29,8 @@ local function addProjectRoot()
   return root
 end
 
-addUserRockTree()
 local root = addProjectRoot()
+require("tools.rockpath").add()
 
 local lfs = require("lfs")
 local luaunit = require("luaunit")

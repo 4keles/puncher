@@ -3,25 +3,7 @@
 -- Run it the same way the automated checks do:
 --     lua tools/check_boundary.lua
 
-local function addUserRockTree()
-  local home = os.getenv("HOME")
-  if not home then
-    return
-  end
-  local tree = home .. "/.luarocks"
-  package.path = table.concat({
-    tree .. "/share/lua/5.4/?.lua",
-    tree .. "/share/lua/5.4/?/init.lua",
-    package.path,
-  }, ";")
-  package.cpath = table.concat({
-    tree .. "/lib/lua/5.4/?.so",
-    tree .. "/lib64/lua/5.4/?.so",
-    package.cpath,
-  }, ";")
-end
-
-addUserRockTree()
+require("tools.rockpath").add()
 
 local boundary = require("tools.boundary")
 local findings = boundary.scanDirectory("core")
