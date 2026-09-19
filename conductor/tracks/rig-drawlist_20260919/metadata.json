@@ -16,7 +16,9 @@
     "security_review": "passed",
     "security_review_note": "Mandatory because the track adds scripts that read and write files. No external call, subprocess, network access or dynamic code loading anywhere in the shipped extension, which is what needing no permission dialog rests on. Only main.lua ships; tools and tests are never packaged. Committed binaries are small: the sample 1635 bytes, all twenty reference frames 6509 bytes. The automated checks were untouched, so the three deferred rows keep their severity. Eight crafted rigs were all refused with a message naming the part.",
     "mutation_testing": "passed",
-    "mutation_testing_note": "Sixteen deliberate breaks, one at a time. Fifteen caught. The survivor was the sign of the sideways term in the forward kinematics, which survived because every placement check had the child directly above or below its parent; closed with two cases for a part off to the side."
+    "mutation_testing_note": "Sixteen deliberate breaks, one at a time. Fifteen caught. The survivor was the sign of the sideways term in the forward kinematics, which survived because every placement check had the child directly above or below its parent; closed with two cases for a part off to the side.",
+    "backlog_reconciliation": "passed",
+    "backlog_reconciliation_note": "Five rows existed and none had an issue on the remote, although the rule has required both since the remote arrived. All are open now and linked both ways. Reconciliation also raised a sixth: nothing builds the distribution archive, so the security review's claim about what ships is true of the manifest and enforced by nothing."
   },
   "pull_request": 2
 }
