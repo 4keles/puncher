@@ -66,6 +66,28 @@ function TestResample:testEnlargingRefusesAFactorItCannotReachByDoubling()
   luaunit.assertErrorMsgContains("doubling", rasterOps.enlargeBy, source, 3)
 end
 
+function TestResample:testEnlargingRefusesAFactorThatWouldNotEnlarge()
+  -- Nought and a negative used to fall straight past the loop and hand back
+  -- the picture unchanged, so a caller asking for the impossible got a
+  -- plausible answer and found out later, somewhere else.
+  local source = raster.fromRows { "ab", "cd" }
+  luaunit.assertErrorMsgContains("larger", rasterOps.enlargeBy, source, 0)
+  luaunit.assertErrorMsgContains("larger", rasterOps.enlargeBy, source, -2)
+  luaunit.assertErrorMsgContains("larger", rasterOps.enlargeBy, source, 1.5)
+end
+
+function TestResample:testEnlargingByOneReturnsACopyRatherThanThePictureItself()
+  -- Everything else here returns something new. One routine that sometimes
+  -- returns its own argument is a caller writing into a picture it does not
+  -- own, which is a bug that shows up nowhere near where it was caused.
+  local source = raster.fromRows { "ab", "cd" }
+  local same = rasterOps.enlargeBy(source, 1)
+  luaunit.assertEquals(same.width, source.width)
+  luaunit.assertEquals(same:get(0, 0), source:get(0, 0))
+  same:set(0, 0, string.byte("z"))
+  luaunit.assertEquals(source:get(0, 0), string.byte("a"))
+end
+
 -- Reducing. This is where a colour would be invented if anything averaged, so
 -- it picks a value that was already in the block instead.
 

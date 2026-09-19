@@ -35,8 +35,8 @@ local function pivotOf(slice)
     return { x = slice.pivot.x, y = slice.pivot.y }
   end
   return {
-    x = math.floor(slice.bounds.width * M.DEFAULT_PIVOT_X),
-    y = math.floor((slice.bounds.height - 1) * M.DEFAULT_PIVOT_Y),
+    x = parts.alongExtent(slice.bounds.width, M.DEFAULT_PIVOT_X),
+    y = parts.alongExtent(slice.bounds.height, M.DEFAULT_PIVOT_Y),
   }
 end
 

@@ -23,6 +23,21 @@ local M = {}
 M.WHOLE_PIVOT_X = 0.5
 M.WHOLE_PIVOT_Y = 1.0
 
+--- Turn a fraction along a rectangle into a whole pixel inside it.
+-- A default pivot is stated as a fraction so one rule reads the same at every
+-- size, but a pixel grid has no half positions. The fraction runs across the
+-- pixels that exist - from the first to the last - rather than across the
+-- rectangle's width, so a fraction of one lands on the last pixel rather than
+-- one past the end. Both defaults below and the slice reader's own go through
+-- here, because the same idea measured two different ways is how a limb ends
+-- up a pixel off in one direction only.
+-- @tparam number extent  how many pixels across
+-- @tparam number fraction  0 is the first pixel, 1 the last
+-- @treturn number
+function M.alongExtent(extent, fraction)
+  return math.floor((extent - 1) * fraction + 0.5)
+end
+
 --- The rig for a drawing nobody has marked up.
 -- One part covering everything, which is exactly what the motion this engine
 -- produced before parts existed was doing implicitly.
@@ -35,8 +50,8 @@ function M.fromWholeDrawing(bounds)
       role = "body",
       rect = { x = bounds.x, y = bounds.y, width = bounds.width, height = bounds.height },
       pivot = {
-        x = math.floor(bounds.width * M.WHOLE_PIVOT_X),
-        y = math.floor((bounds.height - 1) * M.WHOLE_PIVOT_Y),
+        x = M.alongExtent(bounds.width, M.WHOLE_PIVOT_X),
+        y = M.alongExtent(bounds.height, M.WHOLE_PIVOT_Y),
       },
     },
   }

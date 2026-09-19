@@ -107,6 +107,16 @@ end
 -- @treturn boolean true, or an error naming the frame and the instruction
 function M.validate(list, tree)
   check(list.frames and #list.frames > 0, "this draw list has no frames, so it would draw nothing")
+  check(list.layers and #list.layers > 0, "this draw list names no layer to draw on")
+
+  -- An instruction may only name a layer the list declares. The adapter
+  -- creates exactly the declared layers and then looks each instruction's
+  -- layer up among them; one that was never declared is not a drawing that
+  -- goes somewhere unexpected, it is a drawing that goes nowhere.
+  local declared = {}
+  for _, name in ipairs(list.layers) do
+    declared[name] = true
+  end
 
   for frameIndex, frame in ipairs(list.frames) do
     local where = ("frame %d"):format(frameIndex)
@@ -139,6 +149,12 @@ function M.validate(list, tree)
         which
       )
       check(type(draw.layer) == "string", "%s does not say which layer it draws on", which)
+      check(
+        declared[draw.layer] == true,
+        "%s draws on '%s', which this list never declares",
+        which,
+        tostring(draw.layer)
+      )
     end
   end
 

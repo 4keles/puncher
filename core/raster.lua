@@ -285,13 +285,25 @@ end
 
 --- Enlarge to a factor, by doubling repeatedly.
 -- Only powers of two are reachable, because the filter works on pairs. Asking
--- for anything else is a mistake worth reporting rather than rounding away.
+-- for anything else is a mistake worth reporting rather than rounding away,
+-- and that includes a factor below one: shrinking is the reduction's job and
+-- quietly returning the picture unchanged would hide the mistake until
+-- something downstream measured the wrong size.
+--
+-- A factor of one is the honest identity, so it returns a copy rather than
+-- the picture it was handed. Every other routine here returns something new,
+-- and one that sometimes returns its own argument is a caller's mutation
+-- reaching back into a picture it does not own.
 -- @tparam table source
 -- @tparam number factor
 -- @treturn table a new matrix
 function M.enlargeBy(source, factor)
+  if factor < 1 or factor % 1 ~= 0 then
+    error(("a factor of %s is not a whole number of times larger"):format(tostring(factor)), 2)
+  end
+
   local remaining = factor
-  local result = source
+  local result = matrix.clone(source)
 
   while remaining > 1 do
     if remaining % 2 ~= 0 then

@@ -20,6 +20,19 @@ local matrix = require("core.matrix")
 local M = {}
 
 --- Read part of an image into a matrix.
+--
+-- A rectangle may reach past the image, and that is not a mistake. A part is
+-- marked in the sprite's coordinates while a cel holds only the pixels that
+-- were drawn on, so a rectangle with any margin around a limb routinely
+-- starts outside the cel it is cut from. Anywhere outside, nothing is drawn,
+-- which is the same answer the matrix gives for the same question.
+--
+-- Reaching past the image must never be answered by reading the buffer
+-- anyway. Indexing a string from before its start counts backwards from its
+-- end in this language, so an unchecked read does not fail - it returns bytes
+-- from the far side of the picture and assembles them into colours that were
+-- never in the drawing. That is the one thing this project refuses to let
+-- happen quietly, so the bounds are checked per pixel rather than assumed.
 -- @tparam table image
 -- @tparam ?table bounds  x, y, width, height; the whole image by default
 -- @treturn table a matrix
@@ -32,16 +45,22 @@ function M.toMatrix(image, bounds)
   local perPixel = image.bytesPerPixel
 
   for y = 0, bounds.height - 1 do
-    local rowStart = (bounds.y + y) * stride + bounds.x * perPixel
-    for x = 0, bounds.width - 1 do
-      local at = rowStart + x * perPixel
-      local value = 0
-      local place = 1
-      for offset = 1, perPixel do
-        value = value + bytes:byte(at + offset) * place
-        place = place * 256
+    local sourceY = bounds.y + y
+    if sourceY >= 0 and sourceY < image.height then
+      local rowStart = sourceY * stride
+      for x = 0, bounds.width - 1 do
+        local sourceX = bounds.x + x
+        if sourceX >= 0 and sourceX < image.width then
+          local at = rowStart + sourceX * perPixel
+          local value = 0
+          local place = 1
+          for offset = 1, perPixel do
+            value = value + bytes:byte(at + offset) * place
+            place = place * 256
+          end
+          built:set(x, y, value)
+        end
       end
-      built:set(x, y, value)
     end
   end
 

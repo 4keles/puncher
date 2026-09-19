@@ -142,6 +142,23 @@ function TestDrawList:testAnInstructionWithNoLayerIsRefused()
   luaunit.assertErrorMsgContains("layer", drawlist.validate, list, tree())
 end
 
+function TestDrawList:testAnInstructionDrawingOnALayerTheListNeverDeclaresIsRefused()
+  -- The adapter creates exactly the layers the list declares and then looks
+  -- each instruction's layer up among them. One that was never declared is
+  -- not a drawing that lands somewhere unexpected; it is a drawing that lands
+  -- nowhere, which is the failure this validator exists to catch.
+  local list = valid()
+  list.frames[1].draws[1].layer = "Puncher Effects"
+  luaunit.assertErrorMsgContains("never declares", drawlist.validate, list, tree())
+  luaunit.assertErrorMsgContains("Puncher Effects", drawlist.validate, list, tree())
+end
+
+function TestDrawList:testAListDeclaringNoLayerIsRefused()
+  local list = valid()
+  list.layers = {}
+  luaunit.assertErrorMsgContains("no layer", drawlist.validate, list, tree())
+end
+
 function TestDrawList:testAFrameWithNoDurationIsRefused()
   local list = valid()
   list.frames[1].duration = nil

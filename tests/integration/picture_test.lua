@@ -70,6 +70,50 @@ function M.run(support)
       mode.name .. ": the window started where it was asked to"
     )
 
+    -- A window reaching past the image. A part is marked in the sprite's
+    -- coordinates while a cel holds only what was drawn on, so a rectangle
+    -- with any margin around a limb starts outside the cel it is cut from.
+    -- Nothing is there, and the answer has to say so: indexing the buffer from
+    -- before its start counts backwards from its end in this language, which
+    -- returns real bytes from the far side of the picture and assembles them
+    -- into colours the drawing never held.
+    local transparent = image.spec.transparentColor
+    local outside = {
+      { name = "entirely left", bounds = { x = -4, y = 0, width = 2, height = 2 } },
+      { name = "entirely above", bounds = { x = 0, y = -3, width = 2, height = 2 } },
+      { name = "entirely right", bounds = { x = image.width + 1, y = 0, width = 2, height = 2 } },
+      { name = "entirely below", bounds = { x = 0, y = image.height + 1, width = 2, height = 2 } },
+    }
+    for _, case in ipairs(outside) do
+      local read = picture.toMatrix(image, case.bounds)
+      local invented = 0
+      for y = 0, read.height - 1 do
+        for x = 0, read.width - 1 do
+          if read:get(x, y) ~= transparent then
+            invented = invented + 1
+          end
+        end
+      end
+      support.assertEquals(
+        invented,
+        0,
+        mode.name .. ": a window " .. case.name .. " outside the image invented no pixels"
+      )
+    end
+
+    -- And one straddling the edge keeps the pixels that are really there.
+    local straddling = picture.toMatrix(image, { x = -2, y = -2, width = 5, height = 5 })
+    support.assertEquals(
+      straddling:get(2, 2),
+      image:getPixel(0, 0),
+      mode.name .. ": a window straddling the corner kept the pixel that exists"
+    )
+    support.assertEquals(
+      straddling:get(0, 0),
+      transparent,
+      mode.name .. ": and left nothing where the image does not reach"
+    )
+
     sprite:close()
   end
 end

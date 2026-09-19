@@ -19,6 +19,23 @@ local FIGURE = {
   },
 }
 
+-- A fraction along a rectangle, as a whole pixel. Both default pivots and the
+-- slice reader's own go through this one rule, because the same idea measured
+-- two different ways is how a limb ends up a pixel off in one direction only.
+
+function TestParts:testAFractionOfNoughtIsTheFirstPixelAndOneIsTheLast()
+  luaunit.assertEquals(parts.alongExtent(10, 0), 0)
+  luaunit.assertEquals(parts.alongExtent(10, 1), 9)
+  luaunit.assertEquals(parts.alongExtent(1, 0), 0)
+  luaunit.assertEquals(parts.alongExtent(1, 1), 0)
+end
+
+function TestParts:testTheMiddleOfAnEvenRunAndAnOddRunBothLandInside()
+  luaunit.assertEquals(parts.alongExtent(16, 0.5), 8)
+  luaunit.assertEquals(parts.alongExtent(15, 0.5), 7)
+  luaunit.assertEquals(parts.alongExtent(2, 0.5), 1)
+end
+
 -- The fallback. A drawing nobody has marked up is still a rig: one part, the
 -- whole thing, which is how the old single-image motion keeps working.
 
