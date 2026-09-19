@@ -222,8 +222,10 @@ result cannot be seen is not a step.
         off a captured image
   - [x] Rerun every gate affected
 
-- [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
-  - [ ] Run the whole gate set one final time and record the counts
-  - [ ] Attach the phase verification report as a git note
-  - [ ] Mark the phase complete with its checkpoint, tag the savepoint, push
+- [x] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
+  - [x] Run the whole gate set one final time and record the counts
+  - [x] Attach the phase verification report as a git note
+  - [x] Mark the phase complete with its checkpoint, tag the savepoint, push
         the branch and the tags
+
+## Phase 4 complete [checkpoint: e76da1b]
