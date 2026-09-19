@@ -143,6 +143,118 @@ function M.run(support)
   M.runTransparentIndexIsNotAssumedToBeZero(support)
   M.runTurnsAreNeverCompounded(support)
   M.runOneUndoOnADocumentWithHistory(support)
+  M.runOnADocumentShapedLikeARealOne(support)
+end
+
+--- A document with several layers, a hidden one, a selection and more frames.
+-- Everything else here runs on one layer with one frame, which no real
+-- document looks like. The promise is that the artist's work is untouched, and
+-- the ways of breaking it that only appear on a real document are disturbing
+-- another layer, unhiding a hidden one, and clearing the selection - the last
+-- of which is easy to do by accident, because several of the application's own
+-- commands act on the selection when there is one.
+function M.runOnADocumentShapedLikeARealOne(support)
+  local sprite = Sprite(ImageSpec { width = 80, height = 40, colorMode = ColorMode.RGB })
+
+  local background = sprite.layers[1]
+  background.name = "background"
+  local character = sprite:newLayer()
+  character.name = "character"
+  local guide = sprite:newLayer()
+  guide.name = "guide"
+  guide.isVisible = false
+
+  sprite:newEmptyFrame(2)
+
+  local backdrop = Image(80, 40, ColorMode.RGB)
+  for y = 0, 39 do
+    for x = 0, 79 do
+      backdrop:drawPixel(x, y, Color { r = 30, g = 30, b = 60, a = 255 })
+    end
+  end
+  sprite:newCel(background, 1, backdrop, Point(0, 0))
+
+  local art = Image(10, 16, ColorMode.RGB)
+  for y = 0, 15 do
+    for x = 0, 9 do
+      art:drawPixel(x, y, Color { r = 220, g = 80, b = 60, a = 255 })
+    end
+  end
+  local cel = sprite:newCel(character, 1, art, Point(12, 12))
+
+  local selected = Rectangle(0, 0, 8, 8)
+  sprite.selection:select(selected)
+
+  local function describeLayers()
+    local shot = {}
+    for _, layer in ipairs(sprite.layers) do
+      local cels = {}
+      for _, each in ipairs(layer.cels) do
+        cels[#cels + 1] = ("%d@%d,%d:%dx%d"):format(
+          each.frameNumber,
+          each.position.x,
+          each.position.y,
+          each.image.width,
+          each.image.height
+        )
+      end
+      shot[#shot + 1] = ("%s[visible=%s]{%s}"):format(
+        layer.name,
+        tostring(layer.isVisible),
+        table.concat(cels, " ")
+      )
+    end
+    return table.concat(shot, "  ")
+  end
+
+  local before = describeLayers()
+  local framesBefore = #sprite.frames
+
+  local list = {
+    {
+      name = "body",
+      role = "body",
+      rect = { x = 12, y = 12, width = 10, height = 16 },
+      pivot = { x = 5, y = 15 },
+    },
+  }
+  local tree = parts.tree(list)
+  local drawn = drawlist.fromMotionPath {
+    tree = tree,
+    part = "body",
+    layer = "Puncher Layered",
+    path = PATH,
+  }
+  drawlist.validate(drawn, tree)
+  frames.applyDrawList {
+    sprite = sprite,
+    cel = cel,
+    parts = tree.byName,
+    drawList = drawn,
+    tagName = "layered-test",
+  }
+
+  support.assertEquals(
+    sprite.layers[#sprite.layers].name,
+    "Puncher Layered",
+    "the produced layer did not go on top"
+  )
+  support.assertEquals(
+    #sprite.frames,
+    framesBefore + #PATH,
+    "the produced frames were not added after the ones already there"
+  )
+  support.assertEquals(
+    tostring(sprite.selection.bounds),
+    tostring(selected),
+    "the artist's selection was disturbed"
+  )
+  support.assertEquals(guide.isVisible, false, "a hidden layer was made visible")
+
+  app.command.Undo()
+  support.assertEquals(describeLayers(), before, "the artist's own layers did not come back")
+
+  sprite:close()
 end
 
 --- One undo removes the whole result, on a document that already has a past.
