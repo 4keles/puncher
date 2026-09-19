@@ -181,6 +181,30 @@ function TestParts:testAQuarterTurnOfTheTorsoSwingsTheHeadToWhereItShouldBe()
   nearly(luaunit, placed["head"].pivot.y, 16, "the head came level")
 end
 
+function TestParts:testAQuarterTurnSwingsAPartThatSitsOffToTheSide()
+  -- Every other placement test here has the child directly above or below its
+  -- parent, and a part straight above one is the case that cannot tell this
+  -- composition from a wrong one: the sideways term is zero, so flipping its
+  -- sign changes nothing. The arm is the part that is off to the side.
+  --
+  -- The torso pivots at 8,16. The arm's pivot rests at 3,9 - five to the left
+  -- of the torso's and seven above it. A quarter turn clockwise on screen
+  -- sends what was to the left upwards and what was above to the right, so
+  -- five left becomes five up and seven up becomes seven right: 15,11.
+  local placed = parts.solve(parts.tree(FIGURE), { torso = { rotation = 90 } })
+  nearly(luaunit, placed["upper-arm"].pivot.x, 15, "the arm swung to the right")
+  nearly(luaunit, placed["upper-arm"].pivot.y, 11, "and upwards")
+end
+
+function TestParts:testAHalfTurnSendsASidewaysPartToTheOppositeSide()
+  -- Half a turn takes every offset to its negative, which the sideways term
+  -- has to carry too. Five left and seven above becomes five right and seven
+  -- below: 13,23.
+  local placed = parts.solve(parts.tree(FIGURE), { torso = { rotation = 180 } })
+  nearly(luaunit, placed["upper-arm"].pivot.x, 13, "the arm crossed to the other side")
+  nearly(luaunit, placed["upper-arm"].pivot.y, 23, "and below the pivot")
+end
+
 function TestParts:testAPartsOwnTurnDoesNotMoveItsOwnPivot()
   local placed = parts.solve(parts.tree(FIGURE), { torso = { rotation = 90 } })
   nearly(luaunit, placed["torso"].pivot.x, 8, "the torso turned about itself")
