@@ -1,0 +1,28 @@
+Phase 1 verification report - The Pixel Matrix and the Transforms That Are Safe
+
+Scope: from the track's base 0daf891 to this commit.
+
+Gates:
+  core tests      lua tests/run_all.lua                                    123 tests, 0 failures
+  runtime tests   "$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua   29 checks, 0 failures
+  lint            luacheck .                                               0 warnings, 0 errors, 39 files
+  format          stylua --check .                                         nothing to reformat
+  boundary        lua tools/check_boundary.lua                             core clean
+  coverage        lua tools/check_coverage.lua                             100 percent across 9 files
+
+Test coverage for what changed: both new modules carry their own unit tests.
+The test scaffolding that builds a picture out of rows of characters is not
+tested in its own right; it is exercised by every raster test that uses it,
+and a fault in it would fail those rather than hide behind them.
+
+Visual verification: the transforms were rendered inside the real runtime on
+the real sample character and the sheet was looked at. That is what found the
+defect corrected in this commit - a lean that silently dropped the rows that
+travelled furthest. The unit tests could not have found it, because a picture
+three characters wide never runs out of room.
+
+After the correction the sheet shows all four panels whole: the original, the
+mirror, the translation clipped at its frame as designed, and the lean carrying
+the whole figure with nothing lost. Every colour in every panel comes from the
+sample's own palette, which the tests also enforce as a rule rather than an
+observation.
