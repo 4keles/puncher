@@ -277,8 +277,15 @@ Coverage, when a task's quality gate calls for it:
 
 ```bash
 eval "$(luarocks path)"
-lua -lluacov tests/run_all.lua && luacov && head -20 luacov.report.out
+lua -lluacov tests/run_all.lua && luacov
+lua tools/check_coverage.lua     # fails if the core falls below the target
 ```
+
+The coverage tool measures but never decides - it prints a report and exits
+zero whatever the number is. The check above reads that report and turns it
+into a verdict, and refuses a report it cannot parse rather than treating a
+missing number as full coverage. Pass a percentage as its first argument to
+raise the bar for a single run.
 
 ### Verified Versions
 
