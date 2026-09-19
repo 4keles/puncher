@@ -166,21 +166,23 @@ Every step below is a single action with an observable result.
 
 ## Phase 5 — The Rigged Sample and the Closing Demonstration
 
-- [ ] Task: A rigged sample character
-  - [ ] Extend the generator to draw a figure whose parts are separable and to
+- [x] Task: A rigged sample character `f7d539c`
+  - [x] Extend the generator to draw a figure whose parts are separable and to
         mark them with pivots
-  - [ ] Confirm the file stays small and its palette known
+  - [x] Confirm the file stays small and its palette known
 
-- [ ] Task: The demonstration command
-  - [ ] Wire a motion that rotates one part while the body translates
-  - [ ] Run it on the rigged sample and watch every frame
-  - [ ] Run it on an unmarked character and confirm the old dash comes out
+- [x] Task: The demonstration command `f7d539c`
+  - [x] Wire a motion that rotates one part while the body translates
+  - [x] Run it on the rigged sample and watch every frame
+  - [x] Run it on an unmarked character and confirm the old dash comes out
 
-- [ ] Task: Closing condition demonstration
-  - [ ] Show the three proofs end to end: the arm rotating while the body
+- [x] Task: Closing condition demonstration `f7d539c`
+  - [x] Show the three proofs end to end: the arm rotating while the body
         travels, the unmarked character producing the old dash unchanged, and
         the rotation comparison with its recorded decision
-  - [ ] Present the result to the operator for the closure decision
+  - [x] Present the result to the operator for the closure decision
 
-- [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
-  - [ ] Visual verification: the animation is watched in full
+- [x] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`) `f7d539c`
+  - [x] Visual verification: the animation is watched in full
+
+## Phase 5 complete [checkpoint: 8c3051d]
