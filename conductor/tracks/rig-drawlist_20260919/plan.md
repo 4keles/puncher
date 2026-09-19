@@ -248,3 +248,42 @@ fails without it.
         these numbers
 
 - [x] Task: Rerun every gate after the corrections
+
+## Closure — Found by Running It
+
+Three subagents were set to attack the branch from outside: the pixel
+geometry, the same code inside the real editor, and the test suite itself by
+mutation. While they ran, the session went after the gaps its own reading had
+left. What follows was found by executing, not by reading.
+
+- [x] Correction: An animation that drew nothing reported success
+  - [x] A draw list whose parts sit where the artwork is not composited to
+        nothing on every frame, and the adapter created the layer, the frames
+        and the tag anyway and returned a result. The command then told the
+        artist it had produced frames. Confirmed by running it: three frames,
+        one tag, no cels at all, and a cheerful message
+  - [x] This is the rule about never letting empty output pass as real, and it
+        was being broken by the module the rule exists for
+  - [x] A blank frame on its own stays legitimate - a character who has
+        teleported out is not there. A whole animation of them is refused,
+        naming the likely cause, and frames that came out blank are counted
+        and reported to the artist
+  - [x] Confirmed the refusal rolls the document back to exactly what it was,
+        which is also the first real proof of the single-transaction promise
+        on a failure path rather than on a success
+
+- [x] Measurement: What the rotation comparison could not see
+  - [x] The agreement score that settled the route is computed against a much
+        finer version of one of the candidates, so the standard shares the
+        candidate's reduction rule, and it weighs every pixel alike so the
+        three pixels carrying a face cannot move it
+  - [x] Measured again on a standard sharing nothing with any candidate: a
+        turn preserves area, so each colour's count should survive it
+  - [x] Result: every route holds a large region, the shipping route holds a
+        limb one pixel wide best, and single pixels are lost by all of them -
+        worst by the vote. A finer grid recovers none of it, placing the cause
+        in the vote rather than the grid
+  - [x] The route is unchanged, because nothing measured is better overall.
+        The limit is now stated where the decision lives instead of the
+        decision reading as settled in a respect it was never measured in
+  - [x] `tools/measure_detail.lua` reproduces it without an editor

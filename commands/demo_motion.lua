@@ -66,11 +66,21 @@ function M.run()
 
   app.refresh()
 
-  explain {
+  local said = {
     ("Produced %d frames on a new layer."):format(result.lastFrame - result.firstFrame + 1),
     ("Parts came from the %s."):format(source),
-    "Your original layer is untouched. One undo removes all of it.",
   }
+  -- A frame that drew nothing is worth saying out loud. It is legitimate on
+  -- its own, but it usually means a part is marked somewhere the artwork is
+  -- not, and finding that out by playing the animation is worse than being
+  -- told.
+  if result.blankFrames and result.blankFrames > 0 then
+    local empty = ("%d of them came out empty."):format(result.blankFrames)
+    said[#said + 1] = empty .. " Check the parts are marked over the drawing."
+  end
+  said[#said + 1] = "Your original layer is untouched. One undo removes all of it."
+
+  explain(said)
 end
 
 return M

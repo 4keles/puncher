@@ -70,7 +70,11 @@ end
 --   parts    table   the rig, by name
 --   drawList table   what to draw, from the core
 --   tagName  string  optional name for the produced tag
--- @return table  { layers = {Layer}, tag = Tag, firstFrame, lastFrame }
+--
+-- Refuses rather than returning when the whole list came out empty, so a run
+-- of blank tagged frames is never handed back as a result.
+-- @return table  { layers = {Layer}, tag = Tag, firstFrame, lastFrame,
+--                  blankFrames = how many drew nothing }
 function M.applyDrawList(options)
   requireValue(options.sprite, "applying a draw list needs a sprite to write into")
   requireValue(options.cel, "applying a draw list needs a cel to cut the parts from")
@@ -107,6 +111,7 @@ function M.applyDrawList(options)
     end
 
     local firstFrame = #sprite.frames + 1
+    local blankFrames = 0
 
     for index, frame in ipairs(drawList.frames) do
       local frameNumber = firstFrame + index - 1
@@ -122,9 +127,11 @@ function M.applyDrawList(options)
         drawOne(canvases[instruction.layer], cuts, byName[instruction.part], instruction)
       end
 
+      local drewSomething = false
       for name, canvas in pairs(canvases) do
         local drawn = matrix.shrinkBounds(canvas)
         if drawn then
+          drewSomething = true
           local window = matrix.new(drawn.width, drawn.height, canvas.transparent)
           for y = 0, drawn.height - 1 do
             for x = 0, drawn.width - 1 do
@@ -139,6 +146,24 @@ function M.applyDrawList(options)
           )
         end
       end
+
+      if not drewSomething then
+        blankFrames = blankFrames + 1
+      end
+    end
+
+    -- A blank frame on its own is a real thing to draw: a character who has
+    -- teleported out is not there. A whole animation of them is not. It means
+    -- the parts and the drawing never met - the rectangles are somewhere the
+    -- artwork is not - and reporting frames produced would hand back a tagged
+    -- run of empty cels that looks like a result until somebody plays it.
+    if blankFrames == #drawList.frames then
+      error(
+        "every frame came out empty, so nothing was drawn. The parts are "
+          .. "marked somewhere the artwork is not: check that the slices sit "
+          .. "over the drawing in the frame this was run from",
+        2
+      )
     end
 
     local lastFrame = firstFrame + #drawList.frames - 1
@@ -148,6 +173,7 @@ function M.applyDrawList(options)
     result.tag = tag
     result.firstFrame = firstFrame
     result.lastFrame = lastFrame
+    result.blankFrames = blankFrames
   end)
 
   return result

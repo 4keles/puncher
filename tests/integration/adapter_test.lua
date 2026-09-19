@@ -138,6 +138,60 @@ function M.run(support)
   support.assertEquals(#sprite.tags, 0, "tag count after one undo")
 
   sprite:close()
+
+  M.runEmptyResultIsRefused(support)
+end
+
+--- An animation where nothing was drawn must say so, not report success.
+-- A blank frame on its own is a real thing to draw. A whole animation of them
+-- means the parts are marked somewhere the artwork is not, and handing back a
+-- tagged run of empty cels looks like a result until somebody plays it.
+function M.runEmptyResultIsRefused(support)
+  local sprite = newTestSprite()
+  local layersBefore = #sprite.layers
+  local framesBefore = #sprite.frames
+  local tagsBefore = #sprite.tags
+
+  -- A part marked in the corner the blob does not reach.
+  local list = {
+    {
+      name = "body",
+      role = "body",
+      rect = { x = 24, y = 24, width = 6, height = 6 },
+      pivot = { x = 0, y = 5 },
+    },
+  }
+  local tree = parts.tree(list)
+  local list2 = drawlist.fromMotionPath {
+    tree = tree,
+    part = "body",
+    layer = "Puncher Empty",
+    path = PATH,
+  }
+  drawlist.validate(list2, tree)
+
+  local ok, message = pcall(frames.applyDrawList, {
+    sprite = sprite,
+    cel = sprite.cels[1],
+    parts = tree.byName,
+    drawList = list2,
+    tagName = "empty-test",
+  })
+
+  support.assertEquals(ok, false, "an animation that drew nothing was accepted")
+  support.assertTrue(
+    tostring(message):find("empty") ~= nil,
+    "the refusal did not say the frames came out empty"
+  )
+
+  -- And the refusal has to leave the document exactly as it was. A failure
+  -- part way through a transaction that did not roll back is a corrupted
+  -- document, which is worse than the thing being guarded against.
+  support.assertEquals(#sprite.layers, layersBefore, "layers left behind by a refusal")
+  support.assertEquals(#sprite.frames, framesBefore, "frames left behind by a refusal")
+  support.assertEquals(#sprite.tags, tagsBefore, "tags left behind by a refusal")
+
+  sprite:close()
 end
 
 return M
