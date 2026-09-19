@@ -142,6 +142,93 @@ function M.run(support)
   M.runEmptyResultIsRefused(support)
   M.runTransparentIndexIsNotAssumedToBeZero(support)
   M.runTurnsAreNeverCompounded(support)
+  M.runOneUndoOnADocumentWithHistory(support)
+end
+
+--- One undo removes the whole result, on a document that already has a past.
+-- The check above does it on a document that has only just been made. A real
+-- one has been drawn on, undone and drawn on again before the extension is
+-- ever run, and a transaction that behaved differently with history behind it
+-- would take the artist's own work with it or leave half the animation
+-- standing. Both of those are worse than the thing being promised.
+function M.runOneUndoOnADocumentWithHistory(support)
+  local sprite = newTestSprite()
+  local image = sprite.cels[1].image
+
+  app.transaction("a first stroke", function()
+    for y = 4, 8 do
+      image:drawPixel(20, y, Color { r = 40, g = 120, b = 200, a = 255 })
+    end
+  end)
+  app.transaction("a second stroke", function()
+    for y = 10, 14 do
+      image:drawPixel(20, y, Color { r = 40, g = 200, b = 120, a = 255 })
+    end
+  end)
+  app.command.Undo()
+  app.transaction("a stroke after undoing", function()
+    for y = 10, 14 do
+      image:drawPixel(22, y, Color { r = 200, g = 200, b = 40, a = 255 })
+    end
+  end)
+
+  local layersBefore = #sprite.layers
+  local framesBefore = #sprite.frames
+  local tagsBefore = #sprite.tags
+
+  local drawingBefore = {}
+  for y = 0, image.height - 1 do
+    for x = 0, image.width - 1 do
+      drawingBefore[#drawingBefore + 1] = image:getPixel(x, y)
+    end
+  end
+
+  local list = {
+    {
+      name = "body",
+      role = "body",
+      rect = { x = 8, y = 4, width = 8, height = 16 },
+      pivot = { x = 4, y = 15 },
+    },
+  }
+  local tree = parts.tree(list)
+  local drawn = drawlist.fromMotionPath {
+    tree = tree,
+    part = "body",
+    layer = "Puncher History",
+    path = PATH,
+  }
+  drawlist.validate(drawn, tree)
+  frames.applyDrawList {
+    sprite = sprite,
+    cel = sprite.cels[1],
+    parts = tree.byName,
+    drawList = drawn,
+    tagName = "history-test",
+  }
+
+  support.assertTrue(#sprite.frames > framesBefore, "nothing was produced to undo")
+
+  app.command.Undo()
+
+  support.assertEquals(#sprite.layers, layersBefore, "layers left behind by one undo")
+  support.assertEquals(#sprite.frames, framesBefore, "frames left behind by one undo")
+  support.assertEquals(#sprite.tags, tagsBefore, "tags left behind by one undo")
+
+  local after = sprite.cels[1].image
+  local disturbed = 0
+  local index = 0
+  for y = 0, after.height - 1 do
+    for x = 0, after.width - 1 do
+      index = index + 1
+      if after:getPixel(x, y) ~= drawingBefore[index] then
+        disturbed = disturbed + 1
+      end
+    end
+  end
+  support.assertEquals(disturbed, 0, "the artist's own drawing changed")
+
+  sprite:close()
 end
 
 --- A frame's turn is applied to the original drawing, never to the frame
