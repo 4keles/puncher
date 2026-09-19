@@ -23,6 +23,8 @@ local parts = require("core.parts")
 local drawlist = require("core.drawlist")
 local rig = require("adapter.rig")
 local frames = require("adapter.frames")
+local matrix = require("core.matrix")
+local picture = require("adapter.picture")
 
 local REFERENCE_ROOT = app.fs.joinPath(root, "assets", "reference")
 
@@ -81,6 +83,7 @@ for _, sample in ipairs(SAMPLES) do
     )
   else
     local differing = {}
+    local broken = {}
     for index, name in ipairs(references) do
       local reference = Image { fromFile = app.fs.joinPath(directory, name) }
       local produced = Image(sprite.spec)
@@ -88,6 +91,22 @@ for _, sample in ipairs(SAMPLES) do
       if not produced:isEqual(reference) then
         differing[#differing + 1] = name
       end
+      -- Both samples are drawn as pieces that touch, so every frame of a
+      -- correct animation is one piece. This catches a limb coming away from
+      -- its joint even when the frames have been deliberately re-recorded and
+      -- the comparison above has nothing to say. The counting itself lives in
+      -- the core, where it is tested.
+      local pieces = matrix.pieces(picture.toMatrix(produced))
+      if pieces > 1 then
+        broken[#broken + 1] = ("frame %d is in %d pieces"):format(index, pieces)
+      end
+    end
+
+    if #broken > 0 then
+      complaints[#complaints + 1] = ("%s came apart: %s"):format(
+        sample.name,
+        table.concat(broken, ", ")
+      )
     end
 
     if #differing > 0 then
@@ -97,7 +116,12 @@ for _, sample in ipairs(SAMPLES) do
         table.concat(differing, ", ")
       )
     else
-      print(("%s matches all %d reference frames"):format(sample.name, #references))
+      print(
+        ("%s matches all %d reference frames, and holds together in every one"):format(
+          sample.name,
+          #references
+        )
+      )
     end
   end
 

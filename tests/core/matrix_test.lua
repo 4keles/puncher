@@ -116,4 +116,75 @@ function TestMatrix:testNegativeDimensionsAreRejected()
   luaunit.assertErrorMsgContains("negative", matrix.new, 2, -1)
 end
 
+-- Counting the pieces a drawing is in. A body that reads as a body is one
+-- piece; a limb that has come away from its joint is two.
+
+function TestMatrix:testAnEmptyPictureIsInNoPiecesAtAll()
+  luaunit.assertEquals(matrix.pieces(matrix.new(4, 4)), 0)
+end
+
+function TestMatrix:testOneBlobIsOnePiece()
+  local picture = matrix.new(5, 5)
+  picture:set(1, 1, 7)
+  picture:set(2, 1, 7)
+  picture:set(2, 2, 7)
+  luaunit.assertEquals(matrix.pieces(picture), 1)
+end
+
+function TestMatrix:testTwoBlobsWithAGapBetweenThemAreTwoPieces()
+  local picture = matrix.new(6, 3)
+  picture:set(0, 1, 7)
+  picture:set(1, 1, 7)
+  picture:set(4, 1, 7)
+  picture:set(5, 1, 7)
+  luaunit.assertEquals(matrix.pieces(picture), 2)
+end
+
+function TestMatrix:testTouchingOnlyAtACornerIsStillTwoPieces()
+  -- A pixel artist reads a diagonal join as two shapes meeting, not as one
+  -- shape, so the count has to agree with the eye here rather than with the
+  -- convenience of counting diagonals as joins.
+  local picture = matrix.new(3, 3)
+  picture:set(0, 0, 7)
+  picture:set(1, 1, 7)
+  luaunit.assertEquals(matrix.pieces(picture), 2)
+end
+
+function TestMatrix:testTouchingAlongAnEdgeIsOnePiece()
+  local picture = matrix.new(3, 3)
+  picture:set(0, 0, 7)
+  picture:set(1, 0, 7)
+  luaunit.assertEquals(matrix.pieces(picture), 1)
+end
+
+function TestMatrix:testDifferentColoursStillCountAsOnePieceWhenTheyTouch()
+  -- A limb is not a separate piece because it is a different colour from the
+  -- body. What separates pieces is nothing between them.
+  local picture = matrix.new(4, 2)
+  picture:set(0, 0, 3)
+  picture:set(1, 0, 9)
+  picture:set(2, 0, 3)
+  luaunit.assertEquals(matrix.pieces(picture), 1)
+end
+
+function TestMatrix:testAPictureThatIsEntirelyDrawnIsOnePiece()
+  local picture = matrix.new(4, 4)
+  for y = 0, 3 do
+    for x = 0, 3 do
+      picture:set(x, y, 1)
+    end
+  end
+  luaunit.assertEquals(matrix.pieces(picture), 1)
+end
+
+function TestMatrix:testWhatStandsForNothingIsWhatSeparates()
+  -- With a transparent value of nine, pixels holding nine are the gaps and
+  -- pixels holding zero are drawn, which is the reverse of the usual case.
+  local picture = matrix.new(5, 1, 9)
+  picture:set(0, 0, 0)
+  picture:set(1, 0, 0)
+  picture:set(4, 0, 0)
+  luaunit.assertEquals(matrix.pieces(picture), 2)
+end
+
 return { TestMatrix = TestMatrix }

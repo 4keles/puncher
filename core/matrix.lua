@@ -125,6 +125,51 @@ function M.shrinkBounds(source)
   }
 end
 
+--- How many separate pieces the drawing is in.
+-- Two pixels belong to the same piece when they touch along an edge. Touching
+-- only at a corner does not count: a pixel artist reads a diagonal join as two
+-- shapes meeting, not as one shape.
+--
+-- This exists because the eye is unreliable about it in both directions. Twice
+-- in this project a turn was believed to be tearing a figure apart and
+-- measurement said it was not. A body that reads as a body is one piece, and a
+-- limb that has come away from its joint is two, and counting is not fooled by
+-- an outline that looks like a gap.
+-- @tparam table source
+-- @treturn number  0 when nothing is drawn
+function M.pieces(source)
+  local seen = {}
+
+  local function drawn(x, y)
+    return source:contains(x, y) and source:get(x, y) ~= source.transparent
+  end
+
+  local found = 0
+  for y = 0, source.height - 1 do
+    for x = 0, source.width - 1 do
+      local at = y * source.width + x
+      if drawn(x, y) and not seen[at] then
+        found = found + 1
+        seen[at] = true
+        local pending = { { x, y } }
+        while #pending > 0 do
+          local point = table.remove(pending)
+          for _, step in ipairs { { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } } do
+            local nextX, nextY = point[1] + step[1], point[2] + step[2]
+            local nextAt = nextY * source.width + nextX
+            if drawn(nextX, nextY) and not seen[nextAt] then
+              seen[nextAt] = true
+              pending[#pending + 1] = { nextX, nextY }
+            end
+          end
+        end
+      end
+    end
+  end
+
+  return found
+end
+
 --- Every value the picture uses, each once, ignoring what stands for nothing.
 -- This is what makes "a transform must not invent a colour" a thing a test
 -- can check rather than a thing a comment claims.
