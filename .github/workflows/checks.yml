@@ -1,0 +1,88 @@
+# The checks that run on every push and every pull request.
+#
+# What runs here is everything that needs nothing but a plain Lua interpreter:
+# the linter, the format check, the core test suite, the coverage gate and the
+# layer boundary check.
+#
+# What deliberately does not run here is the drawing application. Building it
+# from source takes tens of minutes and about a gigabyte of disk, which would
+# turn every push into a wait long enough that nobody reads the result. The
+# tests that need the real runtime are run locally against an installed binary
+# and are part of the phase gate instead; the process document records the
+# command.
+
+name: Checks
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A branch only needs its newest commit checked; older runs on the same branch
+# are answering a question nobody is asking any more.
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, format, tests, coverage, boundary
+    runs-on: ubuntu-latest
+
+    env:
+      # Pinned on purpose. The formatter rewrites code to match its own version,
+      # so an unpinned formatter can turn a branch red without anyone touching
+      # it. Raise this deliberately, together with the recorded version in the
+      # process document.
+      STYLUA_VERSION: "2.5.2"
+      # The version the drawing application embeds. Everything must run under
+      # the same one, or a passing check here proves nothing about there.
+      LUA_VERSION: "5.4"
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Install the interpreter and the package manager
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            lua${LUA_VERSION} liblua${LUA_VERSION}-dev luarocks unzip
+          lua${LUA_VERSION} -v
+
+      - name: Install the development packages
+        run: |
+          sudo luarocks --lua-version="$LUA_VERSION" install luacheck
+          sudo luarocks --lua-version="$LUA_VERSION" install luaunit
+          sudo luarocks --lua-version="$LUA_VERSION" install luacov
+          sudo luarocks --lua-version="$LUA_VERSION" install luafilesystem
+
+      - name: Install the formatter at the pinned version
+        run: |
+          curl -fsSL -o stylua.zip \
+            "https://github.com/JohnnyMorganz/StyLua/releases/download/v${STYLUA_VERSION}/stylua-linux-x86_64.zip"
+          unzip -q stylua.zip
+          sudo install -m 755 stylua /usr/local/bin/stylua
+          rm -f stylua.zip stylua
+          stylua --version
+
+      - name: Lint
+        run: luacheck .
+
+      - name: Check formatting
+        run: stylua --check .
+
+      - name: Run the core test suite
+        run: lua${LUA_VERSION} tests/run_all.lua
+
+      - name: Measure coverage and hold it to the target
+        run: |
+          lua${LUA_VERSION} -lluacov tests/run_all.lua
+          luacov
+          lua${LUA_VERSION} tools/check_coverage.lua
+
+      - name: Check the core never reaches into the application
+        run: lua${LUA_VERSION} tools/check_boundary.lua
