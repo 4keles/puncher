@@ -97,38 +97,40 @@ Every step below is a single action with an observable result.
 
 ## Phase 3 — Parts, the Tree and Forward Kinematics
 
-- [ ] Task: The part contract and the whole-drawing supplier
-  - [ ] Write failing tests: a drawing with nothing marked yields one part
+- [x] Task: The part contract and the whole-drawing supplier `89bafd0`
+  - [x] Write failing tests: a drawing with nothing marked yields one part
         covering it, with the pivot at a documented place; the shape of a part
         is exactly what everything downstream expects
-  - [ ] Implement the fallback supplier
-  - [ ] Refactor and re-run
+  - [x] Implement the fallback supplier
+  - [x] Refactor and re-run
 
-- [ ] Task: Reading parts from the artist's slices
-  - [ ] Confirm inside the running application whether extension properties
-        survive a save; if they do not, carry the parent and role in the
-        slice's own text field and record why
-  - [ ] Write a runtime test that marks parts on a sprite, saves, reopens and
+- [x] Task: Reading parts from the artist's slices `89bafd0`
+  - [x] Confirm inside the running application whether extension properties
+        survive a save (they do, including integer values, so the fallback to
+        the slice's own text field was not needed)
+  - [x] Write a runtime test that marks parts on a sprite, saves, reopens and
         reads them back
-  - [ ] Implement the reader
-  - [ ] Refactor and re-run
+  - [x] Implement the reader
+  - [x] Refactor and re-run
 
-- [ ] Task: The part tree
-  - [ ] Write failing tests: children resolve under their parent; a missing
+- [x] Task: The part tree `89bafd0`
+  - [x] Write failing tests: children resolve under their parent; a missing
         parent is refused with the part named; a cycle is refused with the
         part named; a pivot outside its rectangle is refused
-  - [ ] Implement the tree
-  - [ ] Refactor and re-run
+  - [x] Implement the tree
+  - [x] Refactor and re-run
 
-- [ ] Task: Forward kinematics
-  - [ ] Write failing tests: a parent's rotation carries its children; a
+- [x] Task: Forward kinematics `89bafd0`
+  - [x] Write failing tests: a parent's rotation carries its children; a
         child's own transform composes after its parent's; a two-level chain
         matches the transform computed by hand; the identity pose leaves every
         part where the artist drew it
-  - [ ] Implement the composition on the existing transform helpers
-  - [ ] Refactor and re-run
+  - [x] Implement the composition on the existing transform helpers
+  - [x] Refactor and re-run
 
-- [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
+- [x] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`) `89bafd0`
+
+## Phase 3 complete [checkpoint: 89bafd0]
 
 ## Phase 4 — The Draw List and the Adapter as Interpreter
 
