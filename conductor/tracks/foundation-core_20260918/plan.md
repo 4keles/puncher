@@ -194,21 +194,33 @@ result cannot be seen is not a step.
         a runner silently
   - [x] Commit the sweep result, then attach the task summary as a git note
 
-- [ ] Task: Closing condition demonstration
-  - [ ] Prove the first clause: from a clean copy of the repository taken out
+- [x] Task: Closing condition demonstration `e76da1b`
+  - [x] Prove the first clause: from a clean copy of the repository taken out
         of version control into an empty directory, one command runs the core
         test suite to a passing report
-  - [ ] Prove the second clause: install the extension into the application's
+  - [x] Prove the second clause: install the extension into the application's
         configuration directory from that clean copy, start the application
         once with verbose logging, and confirm from the log that the extension
         loaded; then capture the menu entry visibly
-  - [ ] Prove the third clause: run the batch script inside the real runtime and
+  - [x] Prove the third clause: run the batch script inside the real runtime and
         confirm it exits zero, showing the exit code rather than asserting it
-  - [ ] Prove the fourth clause: run the extension's motion on the bundled
+  - [x] Prove the fourth clause: run the extension's motion on the bundled
         sample character and watch the produced animation frame by frame, not
         a single frame
-  - [ ] Write the four proofs up with their raw output and present them to the
+  - [x] Write the four proofs up with their raw output and present them to the
         operator for the closure decision
+
+- [x] Correction: The interface driver aimed every click wide `e76da1b`
+  - [x] Cause: the window's position inside its decorated frame was taken for
+        its position on screen, so clicks missed by tens of pixels and looked
+        like input that never arrived
+  - [x] Fix the aim, and let a position read off a captured image be clicked
+        as it is
+  - [x] Correct the tool documentation, which had recorded the wrong diagnosis
+        as fact
+  - [x] Prove the fix by opening the menu and its submenu from coordinates read
+        off a captured image
+  - [x] Rerun every gate affected
 
 - [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
   - [ ] Run the whole gate set one final time and record the counts
