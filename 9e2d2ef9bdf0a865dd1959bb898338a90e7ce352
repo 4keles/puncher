@@ -1,0 +1,33 @@
+Phase 4: the draw list, and the adapter as interpreter
+
+The contract change the whole track was for. The adapter took offsets and one
+picture; it now carries out a list of instructions and decides nothing.
+
+What the list says per frame: how long it lasts, and which part is drawn,
+turned how far, with its pivot landing where. Plain data, so an animation can
+be worked out and checked before any editor is involved. Instructions come in
+drawing order, parents first.
+
+The validator refuses and names the frame and the instruction rather than
+skipping what it cannot draw. A frame missing a limb is a fault that gets
+noticed several tracks away from its cause.
+
+Pixels cross in bulk through the image's raw bytes. That rests on an
+assumption about the application's own layout, so a runtime test reads the
+same image both ways in RGB, grayscale and indexed and fails if they disagree.
+The round trip is exact in all three.
+
+The regression proof: the demonstration was rendered from the phase 3
+checkpoint in a separate worktree and from the rebuilt engine, and all ten
+frames are byte for byte identical. The old single-image motion is now the
+degenerate case of the new machinery - one part, pushed, never turned - rather
+than a second path that could drift away from it.
+
+Those frames are committed as reference fixtures and a check compares against
+them, since that equality is the only thing separating 'the machinery changed'
+from 'the animation changed'. The check was proven able to fail by moving the
+dash eight pixels, and it reported the seven frames that differed.
+
+Gates: 202 unit tests, 71 runtime checks, the animation matching all ten
+references, linter and formatter clean across 51 files, core layer clean, core
+coverage 100 percent across 11 files.
