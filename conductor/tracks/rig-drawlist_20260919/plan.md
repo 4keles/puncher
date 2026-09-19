@@ -134,33 +134,35 @@ Every step below is a single action with an observable result.
 
 ## Phase 4 — The Draw List and the Adapter as Interpreter
 
-- [ ] Task: The draw list and its validator
-  - [ ] Write failing tests: a well-formed list passes; an instruction naming
+- [x] Task: The draw list and its validator `9e2d2ef`
+  - [x] Write failing tests: a well-formed list passes; an instruction naming
         a part that does not exist is refused; an instruction with no
         transform is refused; a frame with no duration is refused; the
         refusal names the frame and the instruction
-  - [ ] Implement the structure and the validator
-  - [ ] Refactor and re-run
+  - [x] Implement the structure and the validator
+  - [x] Refactor and re-run
 
-- [ ] Task: A path becomes a one-part draw list
-  - [ ] Write failing tests: the translation produces exactly the offsets the
+- [x] Task: A path becomes a one-part draw list `9e2d2ef`
+  - [x] Write failing tests: the translation produces exactly the offsets the
         path carried, with durations and holds preserved
-  - [ ] Implement the translation
-  - [ ] Refactor and re-run
+  - [x] Implement the translation
+  - [x] Refactor and re-run
 
-- [ ] Task: The adapter interprets a draw list
-  - [ ] Write a failing runtime test expecting parts drawn under their own
+- [x] Task: The adapter interprets a draw list `9e2d2ef`
+  - [x] Write a failing runtime test expecting parts drawn under their own
         transforms onto the layers named, the source cel untouched, and one
         undo removing everything
-  - [ ] Implement the interpreter, keeping the single transaction
-  - [ ] Confirm reading a cel into a matrix and writing it back in bulk
+  - [x] Implement the interpreter, keeping the single transaction
+  - [x] Confirm reading a cel into a matrix and writing it back in bulk
         round-trips exactly
 
-- [ ] Task: The old demonstration, through the new machinery
-  - [ ] Render the dash before and after and prove the frames are identical
-  - [ ] Keep that comparison as a regression check
+- [x] Task: The old demonstration, through the new machinery `9e2d2ef`
+  - [x] Render the dash before and after and prove the frames are identical
+  - [x] Keep that comparison as a regression check
 
-- [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
+- [x] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`) `9e2d2ef`
+
+## Phase 4 complete [checkpoint: 9e2d2ef]
 
 ## Phase 5 — The Rigged Sample and the Closing Demonstration
 
