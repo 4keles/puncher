@@ -1,0 +1,38 @@
+Phase 2: rotation, decided by measurement
+
+The riskiest part of the track. Research said arbitrary rotation of a sprite
+this small may simply not be possible, and the plan said the decision would be
+measured rather than argued.
+
+Four routes built, rendered on a five-by-twelve limb and a sixteen-by-
+twenty-four figure at six angles, and scored against a thirty-twofold detour
+standing in for the true turn.
+
+  route                       worst agreement         cost per figure turn
+  native grid                 94 percent              0.2 ms
+  eightfold detour            98-99 percent           37 ms
+  sixteenfold detour          99-100 percent          149 ms
+  snap to quarter turns       20-36 percent           0.1 ms
+
+Chosen: the eightfold detour, with quarter turns taking the exact path since
+they are free. Sixteenfold buys under a point for four times the cost.
+Snapping does not rotate at all below forty-five degrees, which is what its
+score says.
+
+Budget: a ten-frame animation with six limb-sized parts is about sixty turns
+at roughly six milliseconds, so under half a second behind a menu command.
+
+Two measurements failed before one worked, and both are kept in the tool.
+Counting holes surrounded on four sides found none anywhere. Counting how many
+separate pieces the drawing broke into found none either. I had read the
+comparison sheet as showing a bad turn snapping the legs off; that was wrong,
+and the metrics said so before it went into a document as a fact. The damage
+is edge quality, not topology.
+
+Guarantees held throughout: no route blends, so no colour is invented - the
+enlargement copies from neighbours, the turn takes one source pixel per
+destination pixel, the reduction votes. Ties resolve the same way every run,
+so the same input always gives the same picture.
+
+Gates: 164 unit tests pass, 29 runtime checks pass, linter and formatter clean
+across 42 files, core layer clean, core coverage 100 percent.
