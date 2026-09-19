@@ -397,7 +397,23 @@ function M.rotateSmoothly(source, degrees, options)
   local pivot = options.pivot
 
   local enlarged = M.enlargeBy(source, factor)
-  local enlargedPivot = pivot and { x = pivot.x * factor, y = pivot.y * factor } or nil
+
+  -- A source pixel becomes a block of the enlargement's size, and the point
+  -- that pixel stood for is the middle of that block, not its corner. Handing
+  -- the corner over turns the picture about somewhere just off the joint, and
+  -- because the miss is a fixed offset it comes out as a displacement of
+  -- (identity minus the turn) applied to it - zero at no turn, largest around
+  -- the middle angles. Measured before this was corrected: a joint wandering
+  -- by four fifths of a pixel at seventy degrees, which over a swing reads as
+  -- the shoulder loosening.
+  local enlargedPivot = nil
+  if pivot then
+    local blockCentre = (factor - 1) / 2
+    enlargedPivot = {
+      x = pivot.x * factor + blockCentre,
+      y = pivot.y * factor + blockCentre,
+    }
+  end
 
   local turned, left, top = M.rotate(enlarged, degrees, { pivot = enlargedPivot })
 
