@@ -2,7 +2,7 @@
   "id": "foundation-core_20260918",
   "title": "Foundation and Mathematical Core",
   "type": "bootstrap",
-  "status": "in_progress",
+  "status": "complete",
   "created": "2026-09-18",
   "base_sha": "50db47a5573cfac163442f2bbc4e7a445631ae5e",
   "branch": "track/foundation-core_20260918",
@@ -12,9 +12,14 @@
     "scope": "Every step already written into this track's plan, including third-party development tooling installs and per-task commits, may proceed without asking again.",
     "limits": "Anything not in the plan still requires the operator's approval before it is done. Closure itself is not delegated: the closing condition is demonstrated and presented before the track is called complete."
   },
-  "phases": 4,
+  "phases": 5,
   "gates": {
     "premise_review": "passed",
     "premise_review_note": "Flowchart drawn and three gaps reported before initialization: coverage measurement had no tool, continuous integration had no remote, and the Aseprite binary path was machine-specific. All three were resolved by operator decision."
+  },
+  "merged": {
+    "pull_request": 1,
+    "merge_commit": "d3cc7fa",
+    "base": "main"
   }
 }
