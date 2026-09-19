@@ -106,10 +106,45 @@ target.
 | Color quantization | Wu / median-cut + k-means refinement (libimagequant model), on `Image.bytes` | Gerstner et al. joint superpixel+palette optimization (NPAR 2012) — highest quality but iterative and on the order of seconds → **v2** |
 | Color distance | **OKLab** Euclidean distance | RGB (perceptually incorrect), CIELAB (hue shift in the blue region) |
 | Dithering | **Bayer (ordered)** 4x4/8x8, default **off** | Floyd-Steinberg — "shifting" noise between frames creates flicker in animation |
-| Rotation | Written in pure Lua over a pixel matrix, with pixel-grid snapping and the sub-pixel accumulator | Relying on the application to rotate — verified against the source: it cannot, from a script |
+| Rotation | Pure Lua over a pixel matrix: exact for quarter turns, otherwise enlarge eightfold with an edge-aware filter, turn there, vote back down | Relying on the application to rotate (it cannot, from a script); turning on the native grid; snapping to exact angles only; enlarging sixteenfold. See the measurement below. |
 | Deformation | Part-based affine (head/torso/arm/leg cut from the sheet + pivot) | Full mesh warping / ARAP — unnecessary complexity |
 | Pixelization (AI) | None | GAN/diffusion pixelization — palette and grid inconsistency between frames, GPU dependency → **v2 option** |
 | Screen shake / hitstop | Exported as JSON metadata | Real screen shake is not possible within the Aseprite canvas |
+
+### The rotation route, decided by measurement (2026-09-19)
+
+Four candidates were rendered on the same subjects at the same angles and
+scored against a much finer turn standing in for the truth. Subjects were the
+two sizes that matter: a limb of five by twelve pixels, and a whole figure of
+sixteen by twenty-four. Angles were ten, twenty, thirty, forty-five, sixty and
+seventy-five degrees.
+
+| Route | Worst agreement, limb | Worst agreement, figure | Cost per turn, figure |
+| --- | --- | --- | --- |
+| Turn on the native grid | 93.9% | 94.3% | 0.2 ms |
+| **Enlarge eightfold, turn, reduce** | **97.9%** | **98.6%** | **37 ms** |
+| Enlarge sixteenfold, turn, reduce | 100% | 99.3% | 149 ms |
+| Snap to the nearest quarter turn | 20.3% | 35.6% | 0.1 ms |
+
+Chosen: eightfold, with quarter turns going through the exact path instead
+since they are free and lose nothing.
+
+Why not the others. Turning on the native grid loses about one pixel in
+twenty, which is not an abstraction - it is the chewed outline visible in the
+comparison sheet at exactly the small angles a limb needs. Sixteenfold buys
+under a percentage point on a figure for four times the cost. Snapping does
+not rotate at all: a limb stays upright until the angle passes forty-five
+degrees and then falls flat, which the score reflects honestly.
+
+Two earlier attempts to measure the damage are recorded because they failed
+and the failures are instructive. Counting holes surrounded on four sides
+found none under any route. Counting how many separate pieces the drawing
+broke into also found none - every route leaves it in one piece. The visible
+damage is edge quality, not topology, and only a comparison against a finer
+turn captured it. The impression that a bad turn "breaks the legs off" was
+wrong, and the numbers said so.
+
+Reproduce with `"$ASEPRITE_BIN" --batch --script tools/compare_rotation.lua`.
 
 ## Test and Quality Infrastructure
 
