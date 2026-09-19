@@ -1,0 +1,15 @@
+{
+  "id": "rig-drawlist_20260919",
+  "title": "Rig and Draw List",
+  "type": "feature",
+  "status": "new",
+  "created": "2026-09-19",
+  "base_sha": "0daf891f1d8f4d5a433a059960df1e97e084a209",
+  "branch": "track/rig-drawlist_20260919",
+  "closing_condition_source": "operator",
+  "phases": 5,
+  "gates": {
+    "premise_review": "passed",
+    "premise_review_note": "Flowchart drawn and one mismatch reported before initialization: the stack document and the motion research both recorded that the application could rotate an image from a script. Checked against the application's source - it cannot. Both documents corrected in their own commit before this track was created."
+  }
+}
