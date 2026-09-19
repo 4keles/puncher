@@ -38,7 +38,20 @@ Every step below is a single action with an observable result.
         of colours is a subset of the input's
   - [x] Apply it to every transform written so far
 
-- [ ] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`)
+- [x] Correction: A lean lost the rows that travelled furthest `1f3014f`
+  - [x] Cause: the result kept the source's size, so at any lean worth having
+        the rows furthest from the pivot ran off the edge and were dropped
+        without a word
+  - [x] Found by rendering the transforms inside the real runtime on the real
+        sample and looking at them; the unit tests use pictures too small to
+        run out of room
+  - [x] Grow the frame and report where its left edge moved to
+
+- [x] Task: Phase Verification and Checkpoint (refer to `conductor/workflow.md`) `1f3014f`
+  - [x] Visual verification: the transforms were rendered in the real runtime
+        and the sheet was looked at
+
+## Phase 1 complete [checkpoint: 1f3014f]
 
 ## Phase 2 — Rotation, Decided by Measurement
 
