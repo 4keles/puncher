@@ -1,0 +1,30 @@
+Correction: the demonstration dash did not read as a dash
+
+Raised by the operator on seeing the rendered animation.
+
+Three faults, all in the numbers rather than the engine:
+  duration   most of a second, about three times too long for a dash
+  distance   one body width, too short for anything to read as fast
+  spacing    eleven frames across that distance, a few pixels each, which
+             reads as sliding
+
+Underneath them, the sample character's canvas was one body wide, so a dash
+could not be watched on it at all - the character simply left the picture.
+
+A fourth fault surfaced while fixing those: the renderer widened the canvas by
+the travel distance measured from the edge of the cel, not the edge of the
+drawing. A cel covering the whole canvas made those wildly different, and the
+output was mostly empty space.
+
+Now: six frames, four times the distance, about a third of a second, and a
+gentler deceleration so the closing frames still travel instead of sitting
+almost still. The sample has room to move into, and the renderer widens only
+when the motion would genuinely run off.
+
+Verified by rendering in batch and looking at every frame of the tagged range
+in order. The interactive check could not be repeated: synthetic input stopped
+reaching the editor partway through the session, with the window still reported
+as active. The tool documentation now says so rather than claiming otherwise.
+
+Gates: 78 unit tests, 29 runtime checks, linter and formatter clean across 30
+files, core layer clean, core coverage 100 percent.
