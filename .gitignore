@@ -1,0 +1,7 @@
+luacov.stats.out
+luacov.report.out
+*.aseprite-extension
+exports/
+.DS_Store
+build/
+__pycache__/

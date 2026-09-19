@@ -1,0 +1,15 @@
+{
+  "name": "puncher",
+  "displayName": "Puncher",
+  "description": "Character-aware procedural action animation and impact VFX",
+  "version": "0.1.0",
+  "author": {
+    "name": "4keles",
+    "url": "https://github.com/4keles"
+  },
+  "license": "MIT",
+  "categories": ["Scripts"],
+  "contributes": {
+    "scripts": [{ "path": "./main.lua" }]
+  }
+}

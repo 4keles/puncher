@@ -116,7 +116,7 @@ target.
 | Layer | Tool | Note |
 | --- | --- | --- |
 | Core unit tests | **LuaUnit** (with system Lua 5.4) | Runs directly in CI since `core/` has no dependency on Aseprite. |
-| Integration tests | `aseprite --batch --script tests/integration/*.lua` | Headless; based on exit code + assert. |
+| Integration tests | `"$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua` | Headless; based on exit code + assert. |
 | Visual regression | Golden PNG comparison | Reference outputs are under `assets/`; intentional changes are noted in the commit message. |
 | Lint | `luacheck` | |
 | Format | `stylua` | |

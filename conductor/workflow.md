@@ -15,7 +15,7 @@
    UX principles in `product-guidelines.md` (non-destructive, modular
    commands, sensible defaults).
 6. **Non-interactive & CI-aware:** Commands are chosen so they run
-   non-interactively (e.g. `aseprite --batch --script ...`).
+   non-interactively (e.g. `"$ASEPRITE_BIN" --batch --script ...`).
 
 ## Task Workflow
 
@@ -107,7 +107,8 @@ Every task follows this lifecycle:
 3. **Run Automated Tests:**
    - Announce the exact command you will use before running it.
    - **Example announcement:** "I will run the tests. **Command:**
-     `aseprite --batch --script tests/run_all.lua`"
+     `lua tests/run_all.lua`, then
+     `"$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua`"
    - Run the command.
    - If tests fail, inform the user and start debugging. Make **at most
      two** fix attempts; if still failing, **stop**, report the status, and
@@ -178,26 +179,124 @@ Verify before a task is considered complete:
 
 ## Development Commands
 
-> **NOTE:** This section will be filled in once `tech-stack.md` is
-> finalized (depends on the Phase 0 research output).
+The extension itself has no runtime dependencies. Everything below is
+development tooling, installed per developer, never bundled with the
+extension.
 
 ### Setup
 
+Requires Lua 5.4 (the version Aseprite embeds), LuaRocks, and the Lua
+development headers.
+
 ```bash
-# TBD — to be filled in once tech-stack.md is finalized
+luarocks --local install luacheck        # linter
+luarocks --local install luaunit         # unit test library
+luarocks --local install luacov          # coverage measurement
+luarocks --local install luafilesystem   # directory listing, used by the test runner
 ```
+
+LuaRocks installs these under `~/.luarocks`; make sure `~/.luarocks/bin` is on
+`PATH`.
+
+The formatter is a standalone binary, downloaded from its own releases rather
+than built from source:
+
+```bash
+gh release download --repo JohnnyMorganz/StyLua --pattern "stylua-linux-x86_64.zip"
+unzip stylua-linux-x86_64.zip && install -m 755 stylua ~/.local/bin/stylua
+```
+
+Aseprite itself is built from source following the upstream instructions. Its
+location is never hardcoded: export `ASEPRITE_BIN` to point at the binary.
+
+```bash
+export ASEPRITE_BIN=aseprite   # or an absolute path, if it is not on PATH
+```
+
+A desktop installation makes this simpler and is worth doing once: link the
+built binary into `~/.local/bin`, copy the icon set from the source tree into
+the icon theme directory, and install the desktop entry and MIME definition
+shipped under `src/desktop/linux` in the Aseprite sources. The application then
+launches from the desktop menu, sprite files open on double click, and the
+binary is on `PATH` for the test commands above. Linking rather than copying
+the binary means a rebuild updates the installed application too.
+
+### Installing the Extension for Development
+
+The application reads user extensions from `extensions/` inside its
+configuration directory, one real directory per extension:
+
+```bash
+mkdir -p "$HOME/.config/aseprite/extensions/puncher"
+cp -r package.json main.lua core adapter commands presets \
+  "$HOME/.config/aseprite/extensions/puncher/"
+```
+
+**A symbolic link does not work.** The application enumerates only real
+directories when it scans for extensions, so a link pointing at a working copy
+is silently skipped - no error, the extension simply never appears. Copy after
+every change you want to see in the running application.
+
+To confirm an extension actually loaded, run the application once with
+`--verbose` and look for its name in `Aseprite.log` inside the configuration
+directory; the log is truncated on every run and only written in verbose mode.
 
 ### Daily Development
 
 ```bash
-# TBD — e.g. aseprite --batch --script tests/run_all.lua
+lua tests/run_all.lua                        # core unit tests, no Aseprite needed
+"$ASEPRITE_BIN" --batch --script tests/integration/run_all.lua   # runtime tests
 ```
+
+### Looking at the Interface
+
+Interface work is not verified until it has been seen in the running
+application, and that check does not need a person. `tools/uidriver.py` focuses
+the editor's window, sends keystrokes or clicks, and captures the window to an
+image file that can be inspected directly.
+
+```bash
+python3 tools/uidriver.py focus
+python3 tools/uidriver.py shot /tmp/check.png   # look first
+python3 tools/uidriver.py click-in 20 10        # then click what you saw
+python3 tools/uidriver.py key Escape
+```
+
+Work from the captured image: take a shot, read the position of what you want
+straight off it, and click that same position. `tools/README.md` explains why
+positions taken from the window manager instead aim tens of pixels wide, and
+why that failure looks deceptively like input never arriving.
+
+Remember that the editor reads extensions only at startup, so restart it after
+copying a change in.
 
 ### Before Commit
 
 ```bash
-# TBD — lint + test + format
+luacheck .                       # lint
+stylua --check .                 # format check
+lua tests/run_all.lua            # core tests
+lua tools/check_boundary.lua     # the core must not reach into the application
 ```
+
+Coverage, when a task's quality gate calls for it:
+
+```bash
+eval "$(luarocks path)"
+lua -lluacov tests/run_all.lua && luacov
+lua tools/check_coverage.lua     # fails if the core falls below the target
+```
+
+The coverage tool measures but never decides - it prints a report and exits
+zero whatever the number is. The check above reads that report and turns it
+into a verdict, and refuses a report it cannot parse rather than treating a
+missing number as full coverage. Pass a percentage as its first argument to
+raise the bar for a single run.
+
+### Verified Versions
+
+Recorded when the tooling was installed on 2026-09-18: Lua 5.4.8,
+luacheck 1.2.0, luaunit 3.5, luacov 0.17.0, stylua 2.5.2.
 
 ## Test Requirements
 
