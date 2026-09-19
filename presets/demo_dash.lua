@@ -28,4 +28,15 @@ return {
   -- longer stops being a dash, whatever path it follows.
   baseDuration = 30,
   holdMultiplier = 2,
+
+  -- A limb thrown out ahead and brought back as the dash settles. It applies
+  -- only to a character whose parts are marked and that has a part by this
+  -- name; on a plain drawing there is nothing to swing, and the dash comes out
+  -- exactly as it did before parts existed.
+  swing = {
+    part = "arm",
+    from = -25,
+    to = 70,
+    curve = "cubicOut",
+  },
 }

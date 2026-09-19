@@ -14,6 +14,7 @@
 -- the order a body has to be assembled in.
 
 local parts = require("core.parts")
+local easing = require("core.easing")
 
 local M = {}
 
@@ -60,16 +61,33 @@ end
 -- The animation this engine produced before parts existed is this case, so it
 -- now goes through the same machinery as everything else rather than down a
 -- path of its own that could drift away from it.
--- @tparam table options  tree, part, path, layer
+--
+-- A swing may be laid over the top: one named part turning through an angle as
+-- the motion runs. When the rig has no part by that name, nothing swings and
+-- what comes out is exactly the plain motion. That is not a special case bolted
+-- on - it is what lets one command serve a character whose parts are marked and
+-- one whose are not, and produce the right thing for each.
+-- @tparam table options  tree, part, path, layer, and optionally swing
 -- @treturn table the draw list
 function M.fromMotionPath(options)
   local frames = {}
+  local swing = options.swing
+  local swings = swing and options.tree.byName[swing.part] ~= nil
+
+  local curve = swings and easing.byName(swing.curve or "linear") or nil
 
   for index, step in ipairs(options.path) do
+    local pose = { [options.part] = { offset = { x = step.x, y = step.y } } }
+
+    if swings then
+      local through = curve(step.progress or 0)
+      pose[swing.part] = { rotation = swing.from + (swing.to - swing.from) * through }
+    end
+
     frames[index] = {
       duration = step.duration,
       held = step.held,
-      pose = { [options.part] = { offset = { x = step.x, y = step.y } } },
+      pose = pose,
     }
   end
 

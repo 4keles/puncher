@@ -181,4 +181,62 @@ function TestDrawList:testWhatTheProducerMakesAlwaysPassesTheValidator()
   luaunit.assertTrue(drawlist.validate(list, tree()))
 end
 
+-- A swing laid over a motion: one part turning while the body travels. When
+-- the rig has no part by that name nothing swings, which is what lets one
+-- command serve a marked-up character and an unmarked one.
+
+local SWING = { part = "arm", from = -20, to = 60, curve = "linear" }
+
+local function dashWithSwing(rigTree, movingPart)
+  return drawlist.fromMotionPath {
+    tree = rigTree,
+    part = movingPart,
+    layer = "Puncher",
+    swing = SWING,
+    path = {
+      { x = 0, y = 0, duration = 60, held = false, progress = 0 },
+      { x = 10, y = 0, duration = 60, held = false, progress = 0.5 },
+      { x = 20, y = 0, duration = 60, held = false, progress = 1 },
+    },
+  }
+end
+
+function TestDrawList:testASwingTurnsItsPartThroughTheAngleAsked()
+  local list = dashWithSwing(tree(), "torso")
+  luaunit.assertAlmostEquals(list.frames[1].draws[2].angle, -20, 0.0001)
+  luaunit.assertAlmostEquals(list.frames[2].draws[2].angle, 20, 0.0001)
+  luaunit.assertAlmostEquals(list.frames[3].draws[2].angle, 60, 0.0001)
+end
+
+function TestDrawList:testASwingLeavesTheTravellingPartUnturned()
+  local list = dashWithSwing(tree(), "torso")
+  for _, frame in ipairs(list.frames) do
+    luaunit.assertEquals(frame.draws[1].angle, 0)
+  end
+end
+
+function TestDrawList:testTheBodyStillTravelsWhileSomethingSwings()
+  local list = dashWithSwing(tree(), "torso")
+  luaunit.assertEquals(list.frames[1].draws[1].pivot.x, 8)
+  luaunit.assertEquals(list.frames[3].draws[1].pivot.x, 28)
+end
+
+function TestDrawList:testNothingSwingsWhenTheRigHasNoSuchPart()
+  local whole = parts.tree(parts.fromWholeDrawing(rectangle(0, 0, 16, 24)))
+  local withSwing = drawlist.fromMotionPath {
+    tree = whole,
+    part = "body",
+    layer = "Puncher",
+    swing = SWING,
+    path = { { x = 4, y = 0, duration = 60, held = false, progress = 1 } },
+  }
+  local without = drawlist.fromMotionPath {
+    tree = whole,
+    part = "body",
+    layer = "Puncher",
+    path = { { x = 4, y = 0, duration = 60, held = false, progress = 1 } },
+  }
+  luaunit.assertEquals(withSwing, without)
+end
+
 return { TestDrawList = TestDrawList }

@@ -24,71 +24,93 @@ local drawlist = require("core.drawlist")
 local rig = require("adapter.rig")
 local frames = require("adapter.frames")
 
-local REFERENCE_DIR = app.fs.joinPath(root, "assets", "reference", "demo-dash")
-local SAMPLE = app.fs.joinPath(root, "assets", "sample-character.aseprite")
+local REFERENCE_ROOT = app.fs.joinPath(root, "assets", "reference")
 
-local sprite = app.open(SAMPLE)
-if not sprite then
-  error("could not open the sample character at " .. SAMPLE)
-end
+-- The same two samples the renderer produces, checked the same way. One has
+-- its parts marked and one does not, which is the pair that proves a single
+-- code path serves both.
+local SAMPLES = {
+  { name = "demo-dash", file = "sample-character.aseprite" },
+  { name = "demo-swing", file = "sample-rigged.aseprite" },
+}
 
-local sourceCel = sprite.cels[1]
 local preset = dofile(app.fs.joinPath(root, "presets", "demo_dash.lua"))
-local tree = parts.tree(rig.read(sprite, sourceCel))
+local path = motion.linear(preset)
 
-local drawn = drawlist.fromMotionPath {
-  tree = tree,
-  part = tree.roots[1],
-  layer = "Puncher Dash",
-  path = motion.linear(preset),
-}
-drawlist.validate(drawn, tree)
-frames.applyDrawList {
-  sprite = sprite,
-  cel = sourceCel,
-  parts = tree.byName,
-  drawList = drawn,
-  tagName = "dash",
-}
+local complaints = {}
 
-local references = app.fs.listFiles(REFERENCE_DIR)
-table.sort(references)
+for _, sample in ipairs(SAMPLES) do
+  local file = app.fs.joinPath(root, "assets", sample.file)
+  local sprite = app.open(file)
+  if not sprite then
+    error("could not open " .. file)
+  end
 
-if #references == 0 then
-  error("no reference frames in " .. REFERENCE_DIR)
-end
+  local sourceCel = sprite.cels[1]
+  local tree = parts.tree(rig.read(sprite, sourceCel))
 
-if #references ~= #sprite.frames then
-  error(
-    ("the animation now has %d frames; there are %d reference frames"):format(
+  local instructions = drawlist.fromMotionPath {
+    tree = tree,
+    part = tree.roots[1],
+    layer = "Puncher Dash",
+    swing = preset.swing,
+    path = path,
+  }
+  drawlist.validate(instructions, tree)
+  frames.applyDrawList {
+    sprite = sprite,
+    cel = sourceCel,
+    parts = tree.byName,
+    drawList = instructions,
+    tagName = "dash",
+  }
+
+  local directory = app.fs.joinPath(REFERENCE_ROOT, sample.name)
+  local references = app.fs.listFiles(directory)
+  table.sort(references)
+
+  if #references == 0 then
+    error("no reference frames in " .. directory)
+  end
+
+  if #references ~= #sprite.frames then
+    complaints[#complaints + 1] = ("%s now has %d frames; there are %d reference frames"):format(
+      sample.name,
       #sprite.frames,
       #references
     )
-  )
-end
+  else
+    local differing = {}
+    for index, name in ipairs(references) do
+      local reference = Image { fromFile = app.fs.joinPath(directory, name) }
+      local produced = Image(sprite.spec)
+      produced:drawSprite(sprite, index)
+      if not produced:isEqual(reference) then
+        differing[#differing + 1] = name
+      end
+    end
 
-local differing = {}
-
-for index, name in ipairs(references) do
-  local reference = Image { fromFile = app.fs.joinPath(REFERENCE_DIR, name) }
-  local produced = Image(sprite.spec)
-  produced:drawSprite(sprite, index)
-
-  if not produced:isEqual(reference) then
-    differing[#differing + 1] = name
+    if #differing > 0 then
+      complaints[#complaints + 1] = ("%s changed in %d frame(s): %s"):format(
+        sample.name,
+        #differing,
+        table.concat(differing, ", ")
+      )
+    else
+      print(("%s matches all %d reference frames"):format(sample.name, #references))
+    end
   end
+
+  sprite:close()
 end
 
-if #differing > 0 then
-  io.stderr:write(("the demonstration animation changed in %d frame(s):\n"):format(#differing))
-  for _, name in ipairs(differing) do
-    io.stderr:write("  " .. name .. "\n")
+if #complaints > 0 then
+  for _, complaint in ipairs(complaints) do
+    io.stderr:write("  " .. complaint .. "\n")
   end
   io.stderr:write(
-    "\nLook at it. If the change is wanted, render the demonstration and copy\n"
-      .. "its frames over the references in the same commit that caused them.\n"
+    "\nLook at it. If the change is wanted, render the demonstrations and copy\n"
+      .. "their frames over the references in the same commit that caused them.\n"
   )
-  error("the demonstration animation no longer matches its references")
+  error("a demonstration animation no longer matches its references")
 end
-
-print(("the demonstration animation matches all %d reference frames"):format(#references))

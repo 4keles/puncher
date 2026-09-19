@@ -51,6 +51,7 @@ function M.run()
     tree = tree,
     part = moving,
     layer = LAYER_NAME,
+    swing = preset.swing,
     path = path,
   }
   drawlist.validate(drawn, tree)
